@@ -13,6 +13,7 @@ class NewsletterApp:
         """
         # Flask app
         self.app: Flask = Flask(__name__)
+        self.app.config["APPLICATION_ROOT"] = "/newsletter"
 
         # Setup routes
         self.setup_routes()
