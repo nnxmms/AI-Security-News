@@ -12,7 +12,6 @@ RUN pip install --upgrade pip
 RUN pip install flask
 # Copy files
 ADD static /home/user/static
-ADD newsletter /home/user/newsletter
 ADD templates /home/user/templates
 COPY app.py /home/user/
 
