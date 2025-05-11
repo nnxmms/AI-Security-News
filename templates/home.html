@@ -16,7 +16,6 @@ body {
     flex-direction: column;
     min-height: 100vh;
     align-items: center;
-    justify-content: center;
 }
 header {
     position: absolute;
@@ -32,25 +31,25 @@ header {
     width: 100%;
     max-width: 800px;
     margin: 0 auto;
-    padding: 20px;
+    padding: 40px 20px; /* Increased padding for better spacing */
     text-align: center;
 }
 h1 {
-    font-size: 36px; /* Reduced for mobile */
-    margin-bottom: 15px; /* Adjusted margin */
+    font-size: 48px; /* Regular size for desktop */
+    margin-bottom: 20px; /* Adjusted margin */
     color: #000;
     font-weight: normal;
 }
 .subtitle {
-    font-size: 18px; /* Reduced for mobile */
+    font-size: 20px; /* Regular size for desktop */
     color: #333;
-    margin-bottom: 30px; /* Adjusted margin */
+    margin-bottom: 50px; /* Adjusted margin */
     font-weight: normal;
     line-height: 1.5;
 }
 .email-input {
     width: 90%; /* Set width relative to the container */
-    max-width: 400px; /* Adjust the maximum width */
+    max-width: 400px; /* Adjusted maximum width */
     padding: 12px 15px;
     border: 1px solid #ccc;
     border-radius: 10px;
@@ -63,9 +62,9 @@ h1 {
 }
 .button-group {
     display: flex;
-    flex-direction: column; /* Stack buttons vertically on mobile */
-    gap: 10px; /* Adjusted gap */
-    align-items: center; /* Center the buttons */
+    flex-direction: row; /* Side by side on desktop */
+    justify-content: center;
+    gap: 15px; /* Added gap between buttons */
 }
 .btn {
     padding: 12px 20px; /* Adjusted padding */
@@ -76,7 +75,7 @@ h1 {
     font-size: 16px;
     cursor: pointer;
     transition: all 0.2s;
-    width: 100%; /* Full width for buttons */
+    flex: 1; /* Allow buttons to take same space */
     max-width: 200px; /* Set max width for buttons */
 }
 .btn:hover {
@@ -96,18 +95,19 @@ footer a.footer-link {
 footer a.footer-link:hover {
     text-decoration: underline;
 }
-@media (min-width: 769px) {
+@media (max-width: 768px) {
     h1 {
-        font-size: 48px; /* Regular size for larger screens */
+        font-size: 36px; /* Reduced for mobile */
     }
     .subtitle {
-        font-size: 20px; /* Regular size for larger screens */
+        font-size: 18px; /* Reduced for mobile */
     }
     .button-group {
-        flex-direction: row; /* Side by side on larger screens */
+        flex-direction: column; /* Stack buttons vertically on mobile */
     }
     .btn {
-        width: auto; /* Default width on larger screens */
+        width: 100%; /* Full width for buttons on mobile */
+        max-width: none; /* Override max width on mobile */
     }
 }
 </style>
