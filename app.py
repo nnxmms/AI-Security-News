@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request, redirect, url_for, Blueprint
 
 class NewsletterApp:
     """
@@ -13,28 +13,33 @@ class NewsletterApp:
         """
         # Flask app
         self.app: Flask = Flask(__name__)
-        self.app.config["APPLICATION_ROOT"] = "/newsletter"
+
+        # Create a Blueprint for the newsletter
+        self.newsletter_bp = Blueprint('newsletter', __name__, url_prefix='/newsletter')
 
         # Setup routes
         self.setup_routes()
+
+        # Register the Blueprint
+        self.app.register_blueprint(self.newsletter_bp)
 
     def setup_routes(self) -> None:
         """
         Setup Flask application routes.
         """
         # Route for the homepage
-        @self.app.route('/', methods=['GET'])
+        @self.newsletter_bp.route('/', methods=['GET'])
         def home():
             print("yess", flush=True)
             return self.render_home()
 
         # Route for the signup form
-        @self.app.route('/signup', methods=['POST'])
+        @self.newsletter_bp.route('/signup', methods=['POST'])
         def signup():
             return self.handle_signup()
 
         # Route for the opt-out form
-        @self.app.route('/optout', methods=['POST'])
+        @self.newsletter_bp.route('/optout', methods=['POST'])
         def optout():
             return self.handle_optout()
 
@@ -54,7 +59,7 @@ class NewsletterApp:
         """
         email: str = request.form['email']
         self.save_email(email)
-        return redirect(url_for('home'))
+        return redirect(url_for('.home'))  # Use the Blueprint's context
 
     def handle_optout(self) -> str:
         """
@@ -64,7 +69,7 @@ class NewsletterApp:
         """
         email: str = request.form['email']
         self.remove_email(email)
-        return redirect(url_for('home'))
+        return redirect(url_for('.home'))  # Use the Blueprint's context
 
     def save_email(self, email: str) -> None:
         """
