@@ -10,6 +10,8 @@ RUN adduser -D user
 # Install requirements
 RUN pip install --upgrade pip
 RUN pip install flask
+RUN pip install pymongo
+
 # Copy files
 ADD static /home/user/static
 ADD templates /home/user/templates
