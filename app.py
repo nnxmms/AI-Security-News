@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 
-from flask import Flask, render_template, request, redirect, url_for, Blueprint
+from flask import Flask, render_template, request, redirect, url_for, Blueprint, send_from_directory
+import os
 
 class NewsletterApp:
     """
@@ -22,6 +23,9 @@ class NewsletterApp:
 
         # Register the Blueprint
         self.app.register_blueprint(self.newsletter_bp)
+
+        # Custom static route to handle static files with prefix
+        self.app.add_url_rule('/newsletter/static/<path:filename>', 'static', self.serve_static)
 
     def setup_routes(self) -> None:
         """
@@ -45,10 +49,16 @@ class NewsletterApp:
     def render_home(self) -> str:
         """
         Render the homepage template.
-
+        
         :return: Rendered HTML of the homepage
         """
         return render_template('home.html')
+
+    def serve_static(self, filename):
+        """
+        Serve static files from the static directory.
+        """
+        return send_from_directory('static', filename)
 
     def handle_signup(self) -> str:
         """
