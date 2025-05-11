@@ -73,7 +73,7 @@ class NewsletterApp:
             return self.render_home(error='Invalid email address.')
 
         self.save_email(email)
-        self.render_home(success='Sign up successful!')
+        return self.render_home(success='Sign up successful!')
 
     def handle_optout(self) -> str:
         """
@@ -87,7 +87,7 @@ class NewsletterApp:
             return self.render_home(error='Invalid email address.')
 
         self.remove_email(email)
-        self.render_home(success='Opt out successful!')
+        return self.render_home(success='Opt out successful!')
 
     def handle_get_sign_ups(self) -> str:
         """
