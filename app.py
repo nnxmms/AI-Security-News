@@ -49,7 +49,7 @@ class NewsletterApp:
             return self.handle_optout()
 
         # Route to get all new sign-ups
-        @self.newsletter_bp.route('/subscribers', methods=['GET'])
+        @self.newsletter_bp.route('/fb0454df-1b01-48fa-9b1e-58d4d3c282ac-6911e296-dc31-4afc-b9ed-f03bfc7d879b', methods=['GET'])
         def get_sign_ups():
             return self.handle_get_sign_ups()
 
