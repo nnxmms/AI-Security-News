@@ -53,13 +53,13 @@ class NewsletterApp:
         def get_sign_ups():
             return self.handle_get_sign_ups()
 
-    def render_home(self, error=None) -> str:
+    def render_home(self, success=None, error=None) -> str:
         """
         Render the homepage template.
 
         :return: Rendered HTML of the homepage
         """
-        return render_template('home.html', error=error)
+        return render_template('home.html', success=success, error=error)
 
     def handle_signup(self) -> str:
         """
