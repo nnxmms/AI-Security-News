@@ -1,6 +1,8 @@
 #!/usr/bin/python3
 
 from flask import Flask, render_template, request, redirect, url_for, Blueprint
+from pymongo import MongoClient
+from pymongo.errors import DuplicateKeyError
 
 class NewsletterApp:
     """
@@ -13,9 +15,13 @@ class NewsletterApp:
         """
         # Flask app
         self.app: Flask = Flask(__name__)
-
         # Create a Blueprint for the newsletter
         self.newsletter_bp = Blueprint('newsletter', __name__, url_prefix='/newsletter')
+        
+        # MongoDB setup
+        self.client = MongoClient('mongodb://newsletter-db-1:27017/')  # Adjust the URI as needed
+        self.db = self.client['newsletter_db']  # Database name
+        self.collection = self.db['subscribers']  # Collection name
 
         # Setup routes
         self.setup_routes()
@@ -31,7 +37,7 @@ class NewsletterApp:
         @self.newsletter_bp.route('/', methods=['GET'])
         def home():
             return self.render_home()
-
+        
         # Route for the signup form
         @self.newsletter_bp.route('/signup', methods=['POST'])
         def signup():
@@ -41,6 +47,11 @@ class NewsletterApp:
         @self.newsletter_bp.route('/optout', methods=['POST'])
         def optout():
             return self.handle_optout()
+
+        # Route to get all new sign-ups
+        @self.newsletter_bp.route('/fb0454df-1b01-48fa-9b1e-58d4d3c282ac-6911e296-dc31-4afc-b9ed-f03bfc7d879b', methods=['GET'])
+        def get_sign_ups():
+            return self.handle_get_sign_ups()
 
     def render_home(self) -> str:
         """
@@ -58,7 +69,7 @@ class NewsletterApp:
         """
         email: str = request.form['email']
         self.save_email(email)
-        return redirect(url_for('.home'))  # Use the Blueprint's context
+        return redirect(url_for('.home'))
 
     def handle_optout(self) -> str:
         """
@@ -68,7 +79,17 @@ class NewsletterApp:
         """
         email: str = request.form['email']
         self.remove_email(email)
-        return redirect(url_for('.home'))  # Use the Blueprint's context
+        return redirect(url_for('.home'))
+
+    def handle_get_sign_ups(self) -> str:
+        """
+        Retrieve all signed-up users.
+
+        :return: List of emails signed up
+        """
+        subscribers = self.collection.find({}, {'_id': 0, 'email': 1})
+        emails = [sub['email'] for sub in subscribers]
+        return {"subscribers": emails}
 
     def save_email(self, email: str) -> None:
         """
@@ -76,8 +97,11 @@ class NewsletterApp:
 
         :param email: Email address to save
         """
-        # Implementation to save email
-        pass
+        try:
+            self.collection.insert_one({'email': email})
+        except DuplicateKeyError:
+            # Email already in the database, handle accordingly
+            pass
 
     def remove_email(self, email: str) -> None:
         """
@@ -85,8 +109,7 @@ class NewsletterApp:
 
         :param email: Email address to remove
         """
-        # Implementation to remove email
-        pass
+        self.collection.delete_one({'email': email})
 
     def run(self) -> None:
         """
