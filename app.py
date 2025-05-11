@@ -147,7 +147,7 @@ class NewsletterApp:
         """
         Run the Flask application.
         """
-        self.app.run(host='0.0.0.0', debug=True)
+        self.app.run(host='0.0.0.0')
 
 if __name__ == '__main__':
     app = NewsletterApp()
