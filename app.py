@@ -3,6 +3,7 @@
 from flask import Flask, render_template, request, redirect, url_for, Blueprint
 from pymongo import MongoClient
 from pymongo.errors import DuplicateKeyError
+import re
 
 class NewsletterApp:
     """
@@ -17,7 +18,6 @@ class NewsletterApp:
         self.app: Flask = Flask(__name__)
         # Create a Blueprint for the newsletter
         self.newsletter_bp = Blueprint('newsletter', __name__, url_prefix='/newsletter')
-        
         # MongoDB setup
         self.client = MongoClient('mongodb://newsletter-db-1:27017/')  # Adjust the URI as needed
         self.db = self.client['newsletter_db']  # Database name
@@ -37,7 +37,7 @@ class NewsletterApp:
         @self.newsletter_bp.route('/', methods=['GET'])
         def home():
             return self.render_home()
-        
+
         # Route for the signup form
         @self.newsletter_bp.route('/signup', methods=['POST'])
         def signup():
@@ -49,25 +49,29 @@ class NewsletterApp:
             return self.handle_optout()
 
         # Route to get all new sign-ups
-        @self.newsletter_bp.route('/fb0454df-1b01-48fa-9b1e-58d4d3c282ac-6911e296-dc31-4afc-b9ed-f03bfc7d879b', methods=['GET'])
+        @self.newsletter_bp.route('/subscribers', methods=['GET'])
         def get_sign_ups():
             return self.handle_get_sign_ups()
 
-    def render_home(self) -> str:
+    def render_home(self, error=None) -> str:
         """
         Render the homepage template.
 
         :return: Rendered HTML of the homepage
         """
-        return render_template('home.html')
+        return render_template('home.html', error=error)
 
     def handle_signup(self) -> str:
         """
         Handle the signup form submission.
 
-        :return: Redirect to homepage after signup
+        :return: Redirect to homepage after signup or render an error
         """
         email: str = request.form['email']
+
+        if not self.is_valid_email(email):
+            return self.render_home(error='Invalid email address.')
+
         self.save_email(email)
         return redirect(url_for('.home'))
 
@@ -75,9 +79,13 @@ class NewsletterApp:
         """
         Handle the opt-out form submission.
 
-        :return: Redirect to homepage after opt-out
+        :return: Redirect to homepage after opt-out or render an error
         """
         email: str = request.form['email']
+
+        if not self.is_valid_email(email):
+            return self.render_home(error='Invalid email address.')
+
         self.remove_email(email)
         return redirect(url_for('.home'))
 
@@ -110,6 +118,19 @@ class NewsletterApp:
         :param email: Email address to remove
         """
         self.collection.delete_one({'email': email})
+
+    @staticmethod
+    def is_valid_email(email: str) -> bool:
+        """
+        Validate the provided email address using regex.
+
+        :param email: The email address to validate
+        :return: True if valid, False otherwise
+        """
+        # Regular expression for validating an Email
+        email_pattern = r"(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$)"
+        
+        return re.match(email_pattern, email) is not None
 
     def run(self) -> None:
         """
