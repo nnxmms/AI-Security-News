@@ -85,7 +85,13 @@
         .error-message {
             color: red; /* Red color for error messages */
             margin-top: 20px;
-            font-style: italic;
+            font-weight: bold;
+            font-style: italic; /* Make the error message italic */
+        }
+        .success-message {
+            color: green; /* Green color for success messages */
+            margin-top: 20px;
+            font-weight: bold;
         }
         footer {
             margin-top: auto;
@@ -127,10 +133,17 @@
         Stay updated with the latest AI Security research advancements.<br>
         Sign up to the AI Security Newsletter today!
     </p>
+
     <!-- Display error message if exists -->
     {% if error %}
         <div class="error-message">{{ error }}</div>
     {% endif %}
+
+    <!-- Display success message if exists -->
+    {% if success %}
+        <div class="success-message">{{ success }}</div>
+    {% endif %}
+  
     <input type="email" id="email" class="email-input" placeholder="Your email address" required>
     <div class="button-group">
         <form action="/newsletter/signup" method="post">
