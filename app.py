@@ -53,7 +53,7 @@ class NewsletterApp:
         """
         email: str = request.form['email']
         self.save_email(email)
-        return redirect(url_for('newsletter_app.home'))  # Redirect to the home route 
+        return redirect(url_for('home'))  # Redirect to the home route 
 
     def handle_optout(self) -> str:
         """
@@ -63,7 +63,7 @@ class NewsletterApp:
         """
         email: str = request.form['email']
         self.remove_email(email)
-        return redirect(url_for('newsletter_app.home'))  # Redirect to the home route 
+        return redirect(url_for('home'))  # Redirect to the home route 
 
     def save_email(self, email: str) -> None:
         """
