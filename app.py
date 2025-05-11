@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 
-from flask import Flask, render_template, request, redirect, url_for, Blueprint
+from flask import Flask, render_template, request, redirect, url_for
 
 class NewsletterApp:
     """
@@ -14,32 +14,26 @@ class NewsletterApp:
         # Flask app
         self.app: Flask = Flask(__name__)
 
-        # Create a Blueprint for the newsletter
-        self.newsletter_bp = Blueprint('newsletter', __name__, url_prefix='/newsletter')
-
         # Setup routes
         self.setup_routes()
-
-        # Register the Blueprint
-        self.app.register_blueprint(self.newsletter_bp)
 
     def setup_routes(self) -> None:
         """
         Setup Flask application routes.
         """
         # Route for the homepage
-        @self.newsletter_bp.route('/', methods=['GET'])
+        @self.app.route('/newsletter/', methods=['GET'])
         def home():
             print("yess", flush=True)
             return self.render_home()
 
         # Route for the signup form
-        @self.newsletter_bp.route('/signup', methods=['POST'])
+        @self.app.route('/newsletter/signup', methods=['POST'])
         def signup():
             return self.handle_signup()
 
         # Route for the opt-out form
-        @self.newsletter_bp.route('/optout', methods=['POST'])
+        @self.app.route('/newsletter/optout', methods=['POST'])
         def optout():
             return self.handle_optout()
 
@@ -59,7 +53,7 @@ class NewsletterApp:
         """
         email: str = request.form['email']
         self.save_email(email)
-        return redirect(url_for('.home'))  # Use the Blueprint's context
+        return redirect(url_for('newsletter_app.home'))  # Redirect to the home route 
 
     def handle_optout(self) -> str:
         """
@@ -69,7 +63,7 @@ class NewsletterApp:
         """
         email: str = request.form['email']
         self.remove_email(email)
-        return redirect(url_for('.home'))  # Use the Blueprint's context
+        return redirect(url_for('newsletter_app.home'))  # Redirect to the home route 
 
     def save_email(self, email: str) -> None:
         """

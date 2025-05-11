@@ -117,11 +117,11 @@ footer a.footer-link:hover {
     </p>
     <input type="email" id="email" class="email-input" placeholder="Your email address" required>
     <div class="button-group">
-        <form action="/signup" method="post">
+        <form action="/newsletter/signup" method="post">
             <input type="hidden" name="email" id="signup-email">
             <button type="submit" class="btn" onclick="copyEmail('signup-email')">Sign Up</button>
         </form>
-        <form action="/optout" method="post">
+        <form action="/newsletter/optout" method="post">
             <input type="hidden" name="email" id="optout-email">
             <button type="submit" class="btn" onclick="copyEmail('optout-email')">Opt Out</button>
         </form>
