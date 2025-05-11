@@ -72,6 +72,9 @@ class NewsletterApp:
         if not self.is_valid_email(email):
             return self.render_home(error='Invalid email address.')
 
+        if self.email_exists(email):
+            return self.render_home(error='This email is already subscribed.')
+
         self.save_email(email)
         return self.render_home(success='Sign up successful!')
 
@@ -129,8 +132,16 @@ class NewsletterApp:
         """
         # Regular expression for validating an Email
         email_pattern = r"(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$)"
-        
         return re.match(email_pattern, email) is not None
+
+    def email_exists(self, email: str) -> bool:
+        """
+        Check if the email already exists in the newsletter list.
+
+        :param email: Email address to check
+        :return: True if exists, False otherwise
+        """
+        return self.collection.count_documents({'email': email}) > 0
 
     def run(self) -> None:
         """
