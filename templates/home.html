@@ -36,26 +36,26 @@ header {
     text-align: center;
 }
 h1 {
-    font-size: 48px;
-    margin-bottom: 30px;
+    font-size: 36px; /* Reduced for mobile */
+    margin-bottom: 15px; /* Adjusted margin */
     color: #000;
     font-weight: normal;
 }
 .subtitle {
-    font-size: 20px;
+    font-size: 18px; /* Reduced for mobile */
     color: #333;
-    margin-bottom: 50px;
+    margin-bottom: 30px; /* Adjusted margin */
     font-weight: normal;
     line-height: 1.5;
 }
 .email-input {
-    width: 100%;
-    max-width: 500px;
+    width: 90%; /* Set width relative to the container */
+    max-width: 400px; /* Adjust the maximum width */
     padding: 12px 15px;
     border: 1px solid #ccc;
     border-radius: 10px;
     font-size: 16px;
-    margin-bottom: 20px;
+    margin: 10px 0; /* Adjusted margin */
 }
 .email-input:focus {
     outline: none;
@@ -63,11 +63,12 @@ h1 {
 }
 .button-group {
     display: flex;
-    justify-content: center;
-    gap: 15px;
+    flex-direction: column; /* Stack buttons vertically on mobile */
+    gap: 10px; /* Adjusted gap */
+    align-items: center; /* Center the buttons */
 }
 .btn {
-    padding: 12px 40px;
+    padding: 12px 20px; /* Adjusted padding */
     border: 1px solid #333;
     border-radius: 10px;
     background-color: white;
@@ -75,6 +76,8 @@ h1 {
     font-size: 16px;
     cursor: pointer;
     transition: all 0.2s;
+    width: 100%; /* Full width for buttons */
+    max-width: 200px; /* Set max width for buttons */
 }
 .btn:hover {
     background-color: #f5f5f5;
@@ -93,12 +96,18 @@ footer a.footer-link {
 footer a.footer-link:hover {
     text-decoration: underline;
 }
-@media (max-width: 768px) {
+@media (min-width: 769px) {
     h1 {
-        font-size: 36px;
+        font-size: 48px; /* Regular size for larger screens */
     }
     .subtitle {
-        font-size: 18px;
+        font-size: 20px; /* Regular size for larger screens */
+    }
+    .button-group {
+        flex-direction: row; /* Side by side on larger screens */
+    }
+    .btn {
+        width: auto; /* Default width on larger screens */
     }
 }
 </style>
