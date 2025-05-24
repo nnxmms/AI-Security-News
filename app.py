@@ -31,8 +31,7 @@ class NewsletterApp:
         self.TOPICS = {
             'red_teaming': 'Red Teaming',
             'safety': 'Safety',
-            'privacy_ethics': 'Privacy & Ethics',
-            'supply_chain': 'Supply Chain Security'
+            'governance': 'Risk & Governance'
         }
 
         # Admin credentials from environment variables
