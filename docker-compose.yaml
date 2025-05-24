@@ -1,0 +1,27 @@
+services:
+  server:
+    image: newsletter-app
+    restart: always
+    expose:
+      - 5000
+    networks:
+      - nginx
+      - internal
+    depends_on:
+      - db
+
+  db:
+    image: mongo:latest
+    restart: always
+    networks:
+      - internal
+    volumes:
+      - mongo_data:/data/db
+
+volumes:
+  mongo_data:
+
+networks:
+  internal:
+  nginx:
+    external: true
