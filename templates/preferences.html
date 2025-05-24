@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Your Preferences - AI Security News</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            line-height: 1.6;
+            color: #333;
+            margin: 0;
+            padding: 0;
+            background-color: white;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            align-items: center;
+        }
+        .container {
+            width: 100%;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            text-align: center;
+        }
+        h1 {
+            font-size: 36px;
+            margin-bottom: 20px;
+            color: #000;
+            font-weight: normal;
+        }
+        .subtitle {
+            font-size: 18px;
+            color: #666;
+            margin-bottom: 30px;
+        }
+        .email-display {
+            font-size: 16px;
+            color: #333;
+            margin-bottom: 30px;
+            padding: 10px;
+            background-color: #f5f5f5;
+            border-radius: 8px;
+        }
+        .section-title {
+            font-size: 18px;
+            color: #666;
+            margin-bottom: 15px;
+            font-weight: normal;
+        }
+        
+        /* Topic Toggles */
+        .topics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+            margin: 0 auto 25px;
+        }
+        
+        .topic-toggle {
+            position: relative;
+        }
+        
+        .topic-toggle input[type="checkbox"] {
+            display: none;
+        }
+        
+        .topic-toggle label {
+            display: block;
+            padding: 10px 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background-color: white;
+            color: #666;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: center;
+        }
+        
+        .topic-toggle input[type="checkbox"]:checked + label {
+            background-color: #333;
+            color: white;
+            border-color: #333;
+        }
+        
+        .topic-toggle label:hover {
+            border-color: #999;
+        }
+        
+        /* Frequency Toggle */
+        .frequency-toggle {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin: 20px 0 30px;
+        }
+        
+        .frequency-option {
+            position: relative;
+        }
+        
+        .frequency-option input[type="radio"] {
+            display: none;
+        }
+        
+        .frequency-option label {
+            display: block;
+            padding: 10px 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background-color: white;
+            color: #666;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .frequency-option input[type="radio"]:checked + label {
+            background-color: #333;
+            color: white;
+            border-color: #333;
+        }
+        
+        .frequency-option label:hover {
+            border-color: #999;
+        }
+        
+        /* Buttons */
+        .btn {
+            padding: 12px 30px;
+            border: 1px solid #333;
+            border-radius: 10px;
+            background-color: #333;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin: 10px;
+        }
+        
+        .btn:hover {
+            background-color: #555;
+        }
+        
+        .btn-secondary {
+            background-color: white;
+            color: #333;
+        }
+        
+        .btn-secondary:hover {
+            background-color: #f5f5f5;
+        }
+        
+        /* Messages */
+        .error-message {
+            color: #ED556C;
+            margin: 20px 0;
+            font-style: italic;
+        }
+        .success-message {
+            color: #006B3C;
+            margin: 20px 0;
+            font-style: italic;
+        }
+        
+        footer {
+            margin-top: auto;
+            padding: 20px;
+            text-align: center;
+            font-size: 14px;
+            color: #666;
+        }
+        footer a {
+            color: #666;
+            text-decoration: none;
+        }
+        footer a:hover {
+            text-decoration: underline;
+        }
+        
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 28px;
+            }
+            .topics-grid {
+                grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            }
+            .frequency-toggle {
+                flex-direction: column;
+                align-items: center;
+            }
+            .frequency-option label {
+                min-width: 200px;
+                text-align: center;
+            }
+        }

@@ -2,120 +2,568 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>AI Security News</title>
     <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
             line-height: 1.6;
-            color: #333;
-            margin: 0;
-            padding: 0;
-            background-color: white;
+            color: #1a1a1a;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
             display: flex;
             flex-direction: column;
-            min-height: 100vh;
             align-items: center;
+            -webkit-text-size-adjust: 100%;
+            position: relative;
+            overflow-x: hidden;
         }
+        
+        /* Animated background shapes */
+        body::before,
+        body::after {
+            content: '';
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: 0.4;
+            animation: float 20s infinite ease-in-out;
+        }
+        
+        body::before {
+            width: 400px;
+            height: 400px;
+            background: #667eea;
+            top: -200px;
+            right: -100px;
+        }
+        
+        body::after {
+            width: 300px;
+            height: 300px;
+            background: #764ba2;
+            bottom: -150px;
+            left: -100px;
+            animation-delay: -10s;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0) rotate(0deg); }
+            33% { transform: translate(30px, -30px) rotate(120deg); }
+            66% { transform: translate(-20px, 20px) rotate(240deg); }
+        }
+        
         header {
             position: absolute;
             top: 20px;
             left: 20px;
+            z-index: 10;
         }
+        
         .header-img {
-            width: 50px;
-            height: 50px;
+            width: 48px;
+            height: 48px;
             border-radius: 50%;
+            border: 3px solid rgba(255, 255, 255, 0.9);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
         }
+        
+        .header-img:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+        }
+        
         .container {
             width: 100%;
-            max-width: 800px;
+            max-width: 600px;
             margin: 0 auto;
-            padding: 40px 20px; /* Increased padding for better spacing */
+            padding: 60px 20px 40px;
             text-align: center;
+            position: relative;
+            z-index: 1;
         }
+        
         h1 {
-            font-size: 48px; /* Regular size for desktop */
-            margin-bottom: 20px; /* Adjusted margin */
-            color: #000;
-            font-weight: normal;
+            font-size: 48px;
+            font-weight: 700;
+            margin-bottom: 16px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: -1px;
+            animation: fadeInUp 0.8s ease-out;
         }
+        
         .subtitle {
-            font-size: 20px; /* Regular size for desktop */
-            color: #333;
-            margin-bottom: 50px; /* Adjusted margin */
-            font-weight: normal;
-            line-height: 1.5;
+            font-size: 18px;
+            color: #4a5568;
+            margin-bottom: 40px;
+            font-weight: 400;
+            line-height: 1.6;
+            animation: fadeInUp 0.8s ease-out 0.1s both;
         }
-        .email-input {
-            width: 90%; /* Set width relative to the container */
-            max-width: 400px; /* Adjusted maximum width */
-            padding: 12px 15px;
-            border: 1px solid #ccc;
+        
+        /* Glass morphism card */
+        .form-card {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            animation: fadeInUp 0.8s ease-out 0.2s both;
+        }
+        
+        /* Messages */
+        .error-message,
+        .success-message {
+            padding: 12px 20px;
             border-radius: 10px;
-            font-size: 16px;
-            margin: 10px 0; /* Adjusted margin */
+            margin-bottom: 20px;
+            font-size: 14px;
+            font-weight: 500;
+            animation: slideDown 0.3s ease-out;
         }
+        
+        .error-message {
+            background: #fed7d7;
+            color: #c53030;
+            border: 1px solid #fc8181;
+        }
+        
+        .success-message {
+            background: #c6f6d5;
+            color: #276749;
+            border: 1px solid #9ae6b4;
+        }
+        
+        @keyframes slideDown {
+            from { 
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        /* Preferences Section */
+        .preferences-section {
+            margin: 0 0 20px 0;
+            opacity: 0;
+            max-height: 0;
+            overflow: hidden;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .preferences-section.show {
+            opacity: 1;
+            max-height: 500px;
+        }
+        
+        .section-title {
+            font-size: 16px;
+            color: #4a5568;
+            margin-bottom: 16px;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+        }
+        
+        /* Topic Toggles */
+        .topics-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin: 0 auto 28px;
+            width: 100%;
+        }
+        
+        .topic-toggle {
+            position: relative;
+        }
+        
+        .topic-toggle input[type="checkbox"] {
+            display: none;
+        }
+        
+        .topic-toggle label {
+            display: block;
+            padding: 12px 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            background-color: white;
+            color: #4a5568;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: center;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .topic-toggle label::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            opacity: 0;
+            transition: opacity 0.2s ease;
+            border-radius: 10px;
+            z-index: -1;
+        }
+        
+        .topic-toggle input[type="checkbox"]:checked + label {
+            background-color: transparent;
+            color: white;
+            border-color: transparent;
+        }
+        
+        .topic-toggle input[type="checkbox"]:checked + label::before {
+            opacity: 1;
+        }
+        
+        .topic-toggle label:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* Frequency Toggle */
+        .frequency-toggle {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            margin: 20px 0 28px;
+        }
+        
+        .frequency-option {
+            position: relative;
+            flex: 1;
+            max-width: 200px;
+        }
+        
+        .frequency-option input[type="radio"] {
+            display: none;
+        }
+        
+        .frequency-option label {
+            display: block;
+            padding: 12px 24px;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            background-color: white;
+            color: #4a5568;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .frequency-option label::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            opacity: 0;
+            transition: opacity 0.2s ease;
+            z-index: -1;
+        }
+        
+        .frequency-option input[type="radio"]:checked + label {
+            background-color: transparent;
+            color: white;
+            border-color: transparent;
+        }
+        
+        .frequency-option input[type="radio"]:checked + label::before {
+            opacity: 1;
+        }
+        
+        .frequency-option label:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* Email Input */
+        .email-input {
+            width: 100%;
+            padding: 16px 20px;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 16px;
+            margin: 0 0 20px 0;
+            background-color: white;
+            color: #1a1a1a;
+            transition: all 0.2s ease;
+            -webkit-appearance: none;
+            appearance: none;
+            font-weight: 500;
+        }
+        
+        .email-input::placeholder {
+            color: #a0aec0;
+            font-weight: 400;
+        }
+        
         .email-input:focus {
             outline: none;
-            border-color: #999;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
         }
+        
+        /* Buttons */
         .button-group {
             display: flex;
-            flex-direction: row; /* Side by side on desktop */
+            flex-direction: row;
             justify-content: center;
-            gap: 15px; /* Added gap between buttons */
-            margin-top: 20px;
+            gap: 12px;
+            margin-top: 24px;
         }
+        
         .btn {
-            padding: 12px 20px; /* Adjusted padding */
-            border: 1px solid #333;
-            border-radius: 10px;
-            background-color: white;
-            color: #333;
+            padding: 14px 32px;
+            border: none;
+            border-radius: 12px;
             font-size: 16px;
+            font-weight: 600;
             cursor: pointer;
-            transition: all 0.2s;
-            flex: 1; /* Allow buttons to take same space */
-            max-width: 200px; /* Set max width for buttons */
+            transition: all 0.2s ease;
+            position: relative;
+            overflow: hidden;
+            letter-spacing: 0.5px;
         }
-        .btn:hover {
-            background-color: #f5f5f5;
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            box-shadow: 0 4px 16px rgba(102, 126, 234, 0.3);
         }
-        .error-message {
-            color: #ED556C; /* Red color for error messages */
-            margin-top: 20px;
-            font-style: italic; /* Make the error message italic */
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
         }
-        .success-message {
-            color: #006B3C; /* Green color for success messages */
-            margin-top: 20px;
-            font-style: italic;
+        
+        .btn-primary:active {
+            transform: translateY(0);
         }
+        
+        .btn-secondary {
+            background: white;
+            color: #4a5568;
+            border: 2px solid #e2e8f0;
+        }
+        
+        .btn-secondary:hover {
+            background: #f7fafc;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        
+        #saveButton {
+            display: none;
+        }
+        
+        #saveButton.show {
+            display: inline-block;
+            animation: fadeIn 0.3s ease-out;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        /* Footer */
         footer {
             margin-top: auto;
             padding: 20px;
             text-align: center;
             font-size: 14px;
-            color: #666;
+            color: #4a5568;
+            position: relative;
+            z-index: 1;
         }
+        
         footer a.footer-link {
-            color: #666;
+            color: #667eea;
             text-decoration: none;
+            font-weight: 500;
+            transition: color 0.2s ease;
         }
+        
         footer a.footer-link:hover {
-            text-decoration: underline;
+            color: #764ba2;
         }
-        @media (max-width: 768px) {
+        
+        /* Mobile Styles */
+        @media (max-width: 480px) {
+            body::before {
+                width: 300px;
+                height: 300px;
+            }
+            
+            body::after {
+                width: 200px;
+                height: 200px;
+            }
+            
+            .container {
+                padding: 40px 15px 30px;
+            }
+            
             h1 {
-                font-size: 36px; /* Reduced for mobile */
+                font-size: 36px;
             }
+            
             .subtitle {
-                font-size: 18px; /* Reduced for mobile */
+                font-size: 16px;
+                margin-bottom: 30px;
             }
+            
+            .form-card {
+                padding: 20px 15px;
+                border-radius: 16px;
+            }
+            
+            .topics-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 8px;
+                margin-bottom: 20px;
+            }
+            
+            .topic-toggle label {
+                padding: 12px 8px;
+                font-size: 12px;
+            }
+            
+            .frequency-toggle {
+                flex-direction: column;
+                width: 100%;
+            }
+            
+            .frequency-option {
+                width: 100%;
+                max-width: none;
+            }
+            
+            .button-group {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
             .btn {
-                /* width: 20%; Full width for buttons on mobile */
-                max-width: none; /* Override max width on mobile */
+                width: 100%;
+            }
+            
+            #saveButton.show {
+                display: block;
+                width: 100%;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 50px 20px 30px;
+            }
+            
+            h1 {
+                font-size: 40px;
+                margin-bottom: 12px;
+            }
+            
+            .subtitle {
+                font-size: 16px;
+                margin-bottom: 32px;
+            }
+            
+            .topics-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 10px;
+                margin-bottom: 24px;
+            }
+            
+            .topic-toggle label {
+                padding: 14px 12px;
+                font-size: 13px;
+            }
+            
+            .section-title {
+                font-size: 15px;
+                margin-bottom: 14px;
+            }
+            
+            .frequency-toggle {
+                gap: 10px;
+                margin: 16px 0 24px;
+            }
+            
+            .frequency-option label {
+                padding: 14px 20px;
+                font-size: 14px;
+            }
+            
+            .email-input {
+                font-size: 16px;
+                margin: 16px 0 16px 0;
+            }
+            
+            .button-group {
+                flex-direction: column;
+                gap: 10px;
+                margin-top: 20px;
+            }
+            
+            .btn {
+                width: 100%;
+                padding: 16px 24px;
+                font-size: 16px;
+            }
+            
+            #saveButton.show {
+                display: block;
+                width: 100%;
+            }
+            
+            .preferences-section.show {
+                max-height: 600px;
+            }
+            
+            .header-img {
+                width: 42px;
+                height: 42px;
             }
         }
     </style>
@@ -133,25 +581,55 @@
         Sign up to the AI Security Newsletter today!
     </p>
 
-    <!-- Display error message if exists -->
-    {% if error %}
-        <div class="error-message">{{ error }}</div>
-    {% endif %}
+    <div class="form-card">
+        <!-- Display error message if exists -->
+        {% if error %}
+            <div class="error-message">{{ error }}</div>
+        {% endif %}
 
-    <!-- Display success message if exists -->
-    {% if success %}
-        <div class="success-message">{{ success }}</div>
-    {% endif %}
-  
-    <input type="email" id="email" class="email-input" placeholder="Your email address" required>
-    <div class="button-group">
-        <form action="/newsletter/signup" method="post">
-            <input type="hidden" name="email" id="signup-email">
-            <button type="submit" class="btn" onclick="copyEmail('signup-email')">Sign Up</button>
+        <!-- Display success message if exists -->
+        {% if success %}
+            <div class="success-message">{{ success }}</div>
+        {% endif %}
+        
+        <form id="signupForm" action="/newsletter/signup" method="post">
+            <div id="preferencesSection" class="preferences-section">
+                <!-- Topics Section -->
+                <div class="section-title">Select your topics of interest:</div>
+                <div class="topics-grid">
+                    {% for topic_id, topic_name in topics.items() %}
+                    <div class="topic-toggle">
+                        <input type="checkbox" id="{{ topic_id }}" name="topics" value="{{ topic_id }}">
+                        <label for="{{ topic_id }}">{{ topic_name }}</label>
+                    </div>
+                    {% endfor %}
+                </div>
+                
+                <!-- Frequency Section -->
+                <div class="section-title">How often would you like to receive updates?</div>
+                <div class="frequency-toggle">
+                    <div class="frequency-option">
+                        <input type="radio" id="immediate" name="frequency" value="immediate" checked>
+                        <label for="immediate">Immediate</label>
+                    </div>
+                    <div class="frequency-option">
+                        <input type="radio" id="weekly" name="frequency" value="weekly">
+                        <label for="weekly">Weekly Summary</label>
+                    </div>
+                </div>
+            </div>
+            
+            <input type="email" id="email" name="email" class="email-input" placeholder="Your email address" required>
+            
+            <div class="button-group">
+                <button type="submit" class="btn btn-primary" id="signupButton">Sign Up</button>
+                <button type="submit" class="btn btn-primary" id="saveButton">Save Changes</button>
+                <button type="button" class="btn btn-secondary" id="optoutButton">Opt Out</button>
+            </div>
         </form>
-        <form action="/newsletter/optout" method="post">
+        
+        <form id="optoutForm" action="/newsletter/optout" method="post" style="display: none;">
             <input type="hidden" name="email" id="optout-email">
-            <button type="submit" class="btn" onclick="copyEmail('optout-email')">Opt Out</button>
         </form>
     </div>
 </div>
@@ -160,11 +638,163 @@
 </footer>
 
 <script>
-function copyEmail(targetId) {
-    const emailInput = document.getElementById('email');
-    const targetInput = document.getElementById(targetId);
-    targetInput.value = emailInput.value;
+let originalPreferences = null;
+let emailInput = document.getElementById('email');
+let preferencesSection = document.getElementById('preferencesSection');
+let signupButton = document.getElementById('signupButton');
+let saveButton = document.getElementById('saveButton');
+let optoutButton = document.getElementById('optoutButton');
+let typingTimer;
+let doneTypingInterval = 500; // ms
+
+// Helper function to validate email format
+function isValidEmail(email) {
+    // Basic email regex pattern
+    const emailPattern = /^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$/;
+    return emailPattern.test(email);
 }
+
+// Helper function to clear status messages
+function clearStatusMessages() {
+    const errorMsg = document.querySelector('.error-message');
+    const successMsg = document.querySelector('.success-message');
+    if (errorMsg) errorMsg.style.display = 'none';
+    if (successMsg) successMsg.style.display = 'none';
+}
+
+// Show preferences section when email is entered
+emailInput.addEventListener('input', function() {
+    clearTimeout(typingTimer);
+    clearStatusMessages(); // Clear messages on email input
+    
+    if (isValidEmail(this.value)) {
+        preferencesSection.classList.add('show');
+        typingTimer = setTimeout(checkExistingPreferences, doneTypingInterval);
+    } else {
+        preferencesSection.classList.remove('show');
+        resetPreferences();
+    }
+});
+
+// Check if email exists and load preferences
+async function checkExistingPreferences() {
+    const email = emailInput.value;
+    
+    try {
+        const response = await fetch('/newsletter/check-preferences', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ email: email })
+        });
+        
+        const data = await response.json();
+        
+        if (data.exists) {
+            // Load existing preferences
+            loadPreferences(data);
+            originalPreferences = {
+                topics: [...data.topics],
+                frequency: data.frequency
+            };
+            signupButton.style.display = 'none';
+            checkForChanges();
+        } else {
+            // New user
+            resetPreferences();
+            originalPreferences = null;
+            signupButton.style.display = 'inline-block';
+            saveButton.classList.remove('show');
+        }
+    } catch (error) {
+        console.error('Error checking preferences:', error);
+    }
+}
+
+// Load preferences into the form
+function loadPreferences(data) {
+    // Clear all checkboxes first
+    document.querySelectorAll('input[name="topics"]').forEach(checkbox => {
+        checkbox.checked = false;
+    });
+    
+    // Set topics
+    data.topics.forEach(topic => {
+        const checkbox = document.getElementById(topic);
+        if (checkbox) {
+            checkbox.checked = true;
+        }
+    });
+    
+    // Set frequency
+    document.getElementById(data.frequency).checked = true;
+}
+
+// Reset preferences to default
+function resetPreferences() {
+    document.querySelectorAll('input[name="topics"]').forEach(checkbox => {
+        checkbox.checked = false;
+    });
+    document.getElementById('immediate').checked = true;
+}
+
+// Check if preferences have changed
+function checkForChanges() {
+    if (!originalPreferences) {
+        saveButton.classList.remove('show');
+        return;
+    }
+    
+    const currentTopics = Array.from(document.querySelectorAll('input[name="topics"]:checked'))
+        .map(cb => cb.value);
+    const currentFrequency = document.querySelector('input[name="frequency"]:checked').value;
+    
+    const topicsChanged = !arraysEqual(currentTopics, originalPreferences.topics);
+    const frequencyChanged = currentFrequency !== originalPreferences.frequency;
+    
+    if (topicsChanged || frequencyChanged) {
+        saveButton.classList.add('show');
+    } else {
+        saveButton.classList.remove('show');
+    }
+}
+
+// Helper function to compare arrays
+function arraysEqual(a, b) {
+    if (a.length !== b.length) return false;
+    const sortedA = [...a].sort();
+    const sortedB = [...b].sort();
+    return sortedA.every((val, index) => val === sortedB[index]);
+}
+
+// Add change listeners to all inputs
+document.querySelectorAll('input[name="topics"], input[name="frequency"]').forEach(input => {
+    input.addEventListener('change', function() {
+        clearStatusMessages(); // Clear messages on preference changes
+        checkForChanges();
+    });
+});
+
+// Opt out functionality
+optoutButton.addEventListener('click', function() {
+    const email = emailInput.value;
+    if (email) {
+        document.getElementById('optout-email').value = email;
+        document.getElementById('optoutForm').submit();
+    } else {
+        alert('Please enter your email address to opt out.');
+    }
+});
+
+// Form validation
+document.getElementById('signupForm').addEventListener('submit', function(e) {
+    const topics = document.querySelectorAll('input[name="topics"]:checked');
+    if (topics.length === 0) {
+        e.preventDefault();
+        alert('Please select at least one topic of interest.');
+    }
+});
 </script>
 </body>
 </html>
