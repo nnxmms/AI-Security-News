@@ -120,6 +120,7 @@
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
             border: 1px solid rgba(255, 255, 255, 0.3);
             animation: fadeInUp 0.8s ease-out 0.2s both;
+            margin-bottom: 30px;
         }
         
         /* Messages */
@@ -406,6 +407,50 @@
             }
         }
         
+        /* Paper Library Link */
+        .paper-library-section {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            animation: fadeInUp 0.8s ease-out 0.3s both;
+            margin-bottom: 30px;
+        }
+        
+        .library-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 16px 32px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-decoration: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            box-shadow: 0 4px 16px rgba(102, 126, 234, 0.3);
+            transition: all 0.2s ease;
+            letter-spacing: 0.5px;
+        }
+        
+        .library-link:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+        
+        .library-link:active {
+            transform: translateY(0);
+        }
+        
+        .library-description {
+            font-size: 16px;
+            color: #4a5568;
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+        
         /* Footer */
         footer {
             margin-top: auto;
@@ -458,6 +503,11 @@
                 border-radius: 16px;
             }
             
+            .paper-library-section {
+                padding: 20px 15px;
+                border-radius: 16px;
+            }
+            
             .topics-grid {
                 grid-template-columns: repeat(2, 1fr);
                 gap: 8px;
@@ -491,6 +541,12 @@
             #saveButton.show {
                 display: block;
                 width: 100%;
+            }
+            
+            .library-link {
+                width: 100%;
+                justify-content: center;
+                padding: 16px 24px;
             }
         }
         
@@ -565,6 +621,11 @@
                 width: 42px;
                 height: 42px;
             }
+            
+            .library-link {
+                width: 100%;
+                justify-content: center;
+            }
         }
     </style>
 </head>
@@ -580,6 +641,18 @@
         Stay updated on the latest advancements in AI Security research.<br>
         Sign up to the AI Security Newsletter today!
     </p>
+
+    <!-- Paper Library Section -->
+    <div class="paper-library-section">
+        <p class="library-description">
+            Explore our comprehensive collection of AI security research papers, organized by topic and date.
+        </p>
+        <div style="text-align: center;">
+            <a href="/newsletter/library" class="library-link">
+                Browse Paper Library
+            </a>
+        </div>
+    </div>
 
     <div class="form-card">
         <!-- Display error message if exists -->
@@ -632,6 +705,7 @@
             <input type="hidden" name="email" id="optout-email">
         </form>
     </div>
+    
 </div>
 <footer>
     <a href="https://hacking-and-security.de" class="footer-link">Hacking and Security</a>

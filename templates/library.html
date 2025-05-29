@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Paper Library - AI Security News</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            line-height: 1.6;
+            color: #1a1a1a;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            -webkit-text-size-adjust: 100%;
+        }
+        
+        /* Animated background shapes */
+        body::before,
+        body::after {
+            content: '';
+            position: fixed;
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: 0.3;
+            animation: float 25s infinite ease-in-out;
+            pointer-events: none;
+        }
+        
+        body::before {
+            width: 300px;
+            height: 300px;
+            background: #667eea;
+            top: -150px;
+            right: -100px;
+        }
+        
+        body::after {
+            width: 250px;
+            height: 250px;
+            background: #764ba2;
+            bottom: -125px;
+            left: -75px;
+            animation-delay: -12s;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0) rotate(0deg); }
+            33% { transform: translate(20px, -20px) rotate(120deg); }
+            66% { transform: translate(-15px, 15px) rotate(240deg); }
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            position: relative;
+            z-index: 1;
+        }
+        
+        /* Header */
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        
+        .header h1 {
+            font-size: 42px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: -1px;
+        }
+        
+        .header .subtitle {
+            font-size: 18px;
+            color: #4a5568;
+            margin-bottom: 20px;
+        }
+        
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.2s ease;
+            margin-bottom: 20px;
+        }
+        
+        .back-link:hover {
+            color: #764ba2;
+        }
+        
+        /* Search and Filter Section */
+        .search-filter-section {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        
+        .search-filter-grid {
+            display: grid;
+            grid-template-columns: 1fr auto auto;
+            gap: 15px;
+            align-items: end;
+        }
+        
+        .search-group {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .search-group label {
+            font-size: 14px;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 5px;
+        }
+        
+        .search-input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 16px;
+            background-color: white;
+            color: #1a1a1a;
+            transition: all 0.2s ease;
+        }
+        
+        .search-input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        .filter-select {
+            padding: 12px 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 16px;
+            background-color: white;
+            color: #1a1a1a;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .filter-select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        .search-btn {
+            padding: 12px 24px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 16px rgba(102, 126, 234, 0.3);
+        }
+        
+        .search-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+        
+        /* Results Info */
+        .results-info {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        
+        .results-info p {
+            margin: 0;
+            color: #4a5568;
+            font-weight: 500;
+        }
+        
+        /* Week Groups */
+        .week-group {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        
+        .week-header {
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #e2e8f0;
+        }
+        
+        .week-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 5px;
+        }
+        
+        .week-subtitle {
+            font-size: 16px;
+            color: #667eea;
+            font-weight: 500;
+        }
+        
+        /* Papers Grid */
+        .papers-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+        
+        .paper-card {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            color: inherit;
+            display: flex;
+            flex-direction: column;
+            height: 280px; /* Fixed height for all cards */
+        }
+        
+        .paper-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.15);
+            text-decoration: none;
+            color: inherit;
+        }
+        
+        .paper-card-content {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+        
+        .paper-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: #2c3e50;
+            line-height: 1.4;
+            margin-bottom: 12px;
+            /* Fixed height area for title - allows for up to 3 lines */
+            height: 64px;
+            overflow: hidden;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+        }
+        
+        .paper-authors {
+            font-size: 14px;
+            color: #667eea;
+            margin-bottom: 15px;
+            font-weight: 500;
+            height: 40px; /* Fixed height for authors */
+            overflow: hidden;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+        }
+        
+        /* This pushes the bottom content to the bottom */
+        .paper-spacer {
+            flex: 1;
+        }
+        
+        .paper-bottom {
+            margin-top: auto;
+        }
+        
+        .paper-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .paper-date {
+            font-size: 12px;
+            color: #4a5568;
+            font-weight: 500;
+        }
+        
+        .paper-topics {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            min-height: 24px; /* Reserve space even if no topics */
+            margin-bottom: 8px;
+        }
+        
+        /* Topic tags - uniform style for all topics */
+        .topic-tag {
+            display: inline-block;
+            padding: 4px 10px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 10px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+            transition: all 0.2s ease;
+        }
+        
+        .topic-tag:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+        
+        .paper-id {
+            font-size: 11px;
+            color: #8a8a8a;
+            font-family: 'Monaco', 'Menlo', monospace;
+            padding-top: 8px;
+            border-top: 1px solid #e2e8f0;
+            text-align: center;
+        }
+        
+        /* Pagination */
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            margin-top: 40px;
+            padding: 20px;
+        }
+        
+        .pagination a,
+        .pagination span {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.2s ease;
+        }
+        
+        .pagination a {
+            background: rgba(255, 255, 255, 0.9);
+            color: #4a5568;
+            border: 1px solid #e2e8f0;
+        }
+        
+        .pagination a:hover {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            transform: translateY(-1px);
+        }
+        
+        .pagination .current {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: 1px solid transparent;
+        }
+        
+        .pagination .disabled {
+            background: rgba(255, 255, 255, 0.5);
+            color: #cbd5e0;
+            cursor: not-allowed;
+            border: 1px solid #e2e8f0;
+        }
+        
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        
+        .empty-state h3 {
+            font-size: 24px;
+            color: #2c3e50;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+        
+        .empty-state p {
+            color: #4a5568;
+            font-size: 16px;
+        }
+        
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px 15px;
+            }
+            
+            .header h1 {
+                font-size: 32px;
+            }
+            
+            .header .subtitle {
+                font-size: 16px;
+            }
+            
+            .search-filter-grid {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+            
+            .search-filter-section {
+                padding: 20px;
+            }
+            
+            .week-group {
+                padding: 20px;
+            }
+            
+            .week-title {
+                font-size: 20px;
+            }
+            
+            .papers-grid {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+            
+            .paper-card {
+                padding: 15px;
+                height: 260px; /* Slightly shorter on mobile */
+            }
+            
+            .paper-title {
+                font-size: 15px;
+                height: 60px;
+            }
+            
+            .pagination {
+                flex-wrap: wrap;
+                gap: 5px;
+            }
+            
+            .pagination a,
+            .pagination span {
+                width: 35px;
+                height: 35px;
+                font-size: 14px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .header h1 {
+                font-size: 28px;
+            }
+            
+            .week-group {
+                padding: 15px;
+            }
+            
+            .papers-grid {
+                gap: 12px;
+            }
+            
+            .paper-card {
+                padding: 12px;
+                height: 240px;
+            }
+            
+            .paper-title {
+                font-size: 14px;
+                height: 56px;
+            }
+            
+            .search-filter-section {
+                padding: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <a href="/newsletter/" class="back-link">
+                ← Back to Newsletter
+            </a>
+            <h1>Paper Library</h1>
+            <p class="subtitle">Collection of AI Security research papers</p>
+        </div>
+        
+        <!-- Search and Filter -->
+        <div class="search-filter-section">
+            <form method="GET" action="/newsletter/library">
+                <div class="search-filter-grid">
+                    <div class="search-group">
+                        <label for="search">Search papers:</label>
+                        <input type="text" 
+                               id="search" 
+                               name="search" 
+                               class="search-input" 
+                               placeholder="Search titles, authors..." 
+                               value="{{ search_query }}">
+                    </div>
+                    
+                    <div class="search-group">
+                        <label for="topic">Filter by topic:</label>
+                        <select id="topic" name="topic" class="filter-select">
+                            <option value="">All Topics</option>
+                            {% for topic_id, topic_name in topics.items() %}
+                                <option value="{{ topic_id }}" {% if topic_filter == topic_id %}selected{% endif %}>
+                                    {{ topic_name }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <button type="submit" class="search-btn">
+                        🔍 Search
+                    </button>
+                </div>
+            </form>
+        </div>
+        
+        <!-- Results Info -->
+        <div class="results-info">
+            <p>
+                {% if search_query or topic_filter %}
+                    Found {{ total_papers }} paper{{ 's' if total_papers != 1 else '' }}
+                    {% if search_query %}for "{{ search_query }}"{% endif %}
+                    {% if topic_filter %}in {{ topics[topic_filter] }}{% endif %}
+                {% else %}
+                    Showing {{ total_papers }} paper{{ 's' if total_papers != 1 else '' }} total
+                {% endif %}
+            </p>
+        </div>
+        
+        <!-- Papers by Week -->
+        {% if grouped_papers %}
+            {% for week_group in grouped_papers %}
+                <div class="week-group">
+                    <div class="week-header">
+                        <h2 class="week-title">
+                            {{ week_group.week_start.strftime('%B %d') }} - {{ week_group.week_end.strftime('%B %d, %Y') }}
+                        </h2>
+                        <p class="week-subtitle">
+                            {{ week_group.papers|length }} paper{{ 's' if week_group.papers|length != 1 else '' }}
+                        </p>
+                    </div>
+                    
+                    <div class="papers-grid">
+                        {% for paper in week_group.papers %}
+                            <a href="/newsletter/paper/{{ paper['arxiv-id'] }}" class="paper-card">
+                                <div class="paper-card-content">
+                                    <h3 class="paper-title">{{ paper.title or 'Unknown Title' }}</h3>
+                                    
+                                    <div class="paper-authors">{{ paper.authors or 'Unknown Authors' }}</div>
+                                    
+                                    <div class="paper-spacer"></div>
+                                    
+                                    <div class="paper-bottom">
+                                        <div class="paper-meta">
+                                            <div class="paper-date">
+                                                {% if paper.published %}
+                                                    {% set pub_date = paper.published %}
+                                                    {% if pub_date is string %}
+                                                        {{ pub_date[:10] }}
+                                                    {% else %}
+                                                        {{ pub_date.strftime('%Y-%m-%d') }}
+                                                    {% endif %}
+                                                {% else %}
+                                                    Unknown
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="paper-topics">
+                                            {% if paper.get('relevant_for') %}
+                                                {% for topic in paper.relevant_for %}
+                                                    {% if topic in topics %}
+                                                        <span class="topic-tag">{{ topic.replace('_', ' ') }}</span>
+                                                    {% endif %}
+                                                {% endfor %}
+                                            {% endif %}
+                                        </div>
+                                        
+                                        <div class="paper-id">{{ paper['arxiv-id'] }}</div>
+                                    </div>
+                                </div>
+                            </a>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <div class="empty-state">
+                <h3>No papers found</h3>
+                <p>
+                    {% if search_query or topic_filter %}
+                        Try adjusting your search criteria or browse all papers.
+                    {% else %}
+                        Papers will appear here as they are processed by our system.
+                    {% endif %}
+                </p>
+            </div>
+        {% endif %}
+        
+        <!-- Pagination -->
+        {% if total_pages > 1 %}
+            <div class="pagination">
+                {% if has_prev %}
+                    <a href="{{ url_for('newsletter.library', search=search_query, topic=topic_filter, page=page-1) }}">‹</a>
+                {% else %}
+                    <span class="disabled">‹</span>
+                {% endif %}
+                
+                {% for page_num in range(1, total_pages + 1) %}
+                    {% if page_num == page %}
+                        <span class="current">{{ page_num }}</span>
+                    {% elif page_num <= 3 or page_num > total_pages - 3 or (page_num >= page - 1 and page_num <= page + 1) %}
+                        <a href="{{ url_for('newsletter.library', search=search_query, topic=topic_filter, page=page_num) }}">{{ page_num }}</a>
+                    {% elif page_num == 4 and page > 6 %}
+                        <span>...</span>
+                    {% elif page_num == total_pages - 3 and page < total_pages - 5 %}
+                        <span>...</span>
+                    {% endif %}
+                {% endfor %}
+                
+                {% if has_next %}
+                    <a href="{{ url_for('newsletter.library', search=search_query, topic=topic_filter, page=page+1) }}">›</a>
+                {% else %}
+                    <span class="disabled">›</span>
+                {% endif %}
+            </div>
+        {% endif %}
+    </div>
+</body>
+</html>

@@ -3,15 +3,16 @@
 from flask import Flask, render_template, request, redirect, url_for, Blueprint, jsonify, Response
 from pymongo import MongoClient
 from pymongo.errors import DuplicateKeyError
-from datetime import datetime
+from datetime import datetime, timedelta
 import re
 import secrets
 import os
 from functools import wraps
+from typing import List, Dict, Optional
 
 class NewsletterApp:
     """
-    This class implements a newsletter signup web application with topic preferences.
+    This class implements a newsletter signup web application with topic preferences and paper library.
     """
 
     def __init__(self) -> None:
@@ -26,6 +27,7 @@ class NewsletterApp:
         self.client = MongoClient('mongodb://newsletter-db-1:27017/')
         self.db = self.client['newsletter_db']
         self.collection = self.db['subscribers']
+        self.papers_collection = self.db['papers']
 
         # Available topics
         self.TOPICS = {
@@ -44,8 +46,11 @@ class NewsletterApp:
         # Register the Blueprint
         self.app.register_blueprint(self.newsletter_bp)
 
-        # Create index on email for better performance
+        # Create indexes for better performance
         self.collection.create_index('email', unique=True)
+        self.papers_collection.create_index('arxiv-id', unique=True)
+        self.papers_collection.create_index('published')
+        self.papers_collection.create_index([('title', 'text'), ('abstract', 'text'), ('authors', 'text')])
 
     def setup_routes(self) -> None:
         """
@@ -76,6 +81,22 @@ class NewsletterApp:
         @self.requires_auth
         def get_sign_ups():
             return self.handle_get_sign_ups()
+
+        # Route for storing papers (authenticated)
+        @self.newsletter_bp.route('/store-paper', methods=['POST'])
+        @self.requires_auth
+        def store_paper():
+            return self.handle_store_paper()
+
+        # Route for the paper library
+        @self.newsletter_bp.route('/library', methods=['GET'])
+        def library():
+            return self.render_library()
+
+        # Route for individual paper details
+        @self.newsletter_bp.route('/paper/<arxiv_id>', methods=['GET'])
+        def paper_detail(arxiv_id):
+            return self.render_paper_detail(arxiv_id)
 
         # Route for preferences management page (via secure token)
         @self.newsletter_bp.route('/preferences/<token>', methods=['GET'])
@@ -157,27 +178,6 @@ class NewsletterApp:
             })
         else:
             return jsonify({'exists': False})
-        """
-        Check if user exists and return their preferences.
-        
-        :return: JSON response with user preferences or empty if not found
-        """
-        data = request.get_json()
-        email = data.get('email', '').strip()
-        
-        if not self.is_valid_email(email):
-            return jsonify({'exists': False})
-        
-        subscriber = self.collection.find_one({'email': email})
-        
-        if subscriber:
-            return jsonify({
-                'exists': True,
-                'topics': subscriber.get('topics', []),
-                'frequency': subscriber.get('frequency', 'immediate')
-            })
-        else:
-            return jsonify({'exists': False})
 
     def handle_signup(self) -> str:
         """
@@ -228,6 +228,235 @@ class NewsletterApp:
         """
         subscribers = self.collection.find({}, {'_id': 0})
         return {"subscribers": list(subscribers)}
+
+    def handle_store_paper(self) -> dict:
+        """
+        Store a paper in the papers collection.
+        
+        :return: JSON response indicating success or failure
+        """
+        try:
+            paper_data = request.get_json()
+            
+            if not paper_data:
+                return jsonify({'success': False, 'error': 'No paper data provided'}), 400
+            
+            # Required fields
+            required_fields = ['arxiv-id', 'title', 'abstract', 'authors', 'published']
+            for field in required_fields:
+                if field not in paper_data:
+                    return jsonify({'success': False, 'error': f'Missing required field: {field}'}), 400
+            
+            # Add storage timestamp
+            paper_data['stored_at'] = datetime.utcnow()
+            
+            # Optional AI analysis fields
+            analysis_fields = ['key_points', 'conclusion', 'relevance_explanation']
+            for field in analysis_fields:
+                if field not in paper_data:
+                    paper_data[field] = None
+            
+            # Try to insert the paper
+            try:
+                self.papers_collection.insert_one(paper_data)
+                return jsonify({'success': True, 'message': 'Paper stored successfully'})
+            except DuplicateKeyError:
+                # Paper already exists, update it
+                self.papers_collection.replace_one(
+                    {'arxiv-id': paper_data['arxiv-id']},
+                    paper_data
+                )
+                return jsonify({'success': True, 'message': 'Paper updated successfully'})
+                
+        except Exception as e:
+            return jsonify({'success': False, 'error': str(e)}), 500
+
+    def render_library(self) -> str:
+        """
+        Render the paper library page with search and filtering.
+        
+        :return: Rendered HTML of the library page
+        """
+        # Get search and filter parameters
+        search_query = request.args.get('search', '').strip()
+        topic_filter = request.args.get('topic', '').strip()
+        page = int(request.args.get('page', 1))
+        per_page = 24  # Cards per page
+        
+        # Build MongoDB query
+        query = {}
+        
+        # Add search functionality
+        if search_query:
+            query['$text'] = {'$search': search_query}
+        
+        # Add topic filter
+        if topic_filter and topic_filter in ['red_teaming', 'safety', 'governance']:
+            query['relevant_for'] = topic_filter
+        
+        # Get total count for pagination
+        total_papers = self.papers_collection.count_documents(query)
+        
+        # Get papers with pagination - only fields needed for library view
+        skip = (page - 1) * per_page
+        papers_cursor = self.papers_collection.find(
+            query, 
+            {
+                'arxiv-id': 1, 
+                'title': 1, 
+                'published': 1, 
+                'relevant_for': 1, 
+                'authors': 1
+            }
+        ).sort('published', -1).skip(skip).limit(per_page)
+        papers = list(papers_cursor)
+        
+        # Group papers by week
+        grouped_papers = self.group_papers_by_week(papers)
+        
+        # Calculate pagination info
+        total_pages = (total_papers + per_page - 1) // per_page
+        has_prev = page > 1
+        has_next = page < total_pages
+        
+        return render_template('library.html',
+                             grouped_papers=grouped_papers,
+                             topics=self.TOPICS,
+                             search_query=search_query,
+                             topic_filter=topic_filter,
+                             page=page,
+                             total_pages=total_pages,
+                             has_prev=has_prev,
+                             has_next=has_next,
+                             total_papers=total_papers)
+
+    def group_papers_by_week(self, papers: List[Dict]) -> List[Dict]:
+        """
+        Group papers by week based on published date.
+        
+        :param papers: List of paper documents
+        :return: List of week groups with papers
+        """
+        weeks = {}
+        
+        for paper in papers:
+            try:
+                # Parse published date
+                if isinstance(paper.get('published'), str):
+                    pub_date = datetime.fromisoformat(paper['published'].replace('Z', '+00:00'))
+                else:
+                    pub_date = paper.get('published', datetime.utcnow())
+                
+                # Calculate week start (Monday)
+                days_since_monday = pub_date.weekday()
+                week_start = pub_date - timedelta(days=days_since_monday)
+                week_start = week_start.replace(hour=0, minute=0, second=0, microsecond=0)
+                
+                week_key = week_start.isoformat()
+                
+                if week_key not in weeks:
+                    weeks[week_key] = {
+                        'week_start': week_start,
+                        'week_end': week_start + timedelta(days=6),
+                        'papers': []
+                    }
+                
+                weeks[week_key]['papers'].append(paper)
+                
+            except Exception as e:
+                # If date parsing fails, put in current week
+                current_week_start = datetime.utcnow().replace(hour=0, minute=0, second=0, microsecond=0)
+                days_since_monday = current_week_start.weekday()
+                current_week_start = current_week_start - timedelta(days=days_since_monday)
+                
+                week_key = current_week_start.isoformat()
+                
+                if week_key not in weeks:
+                    weeks[week_key] = {
+                        'week_start': current_week_start,
+                        'week_end': current_week_start + timedelta(days=6),
+                        'papers': []
+                    }
+                
+                weeks[week_key]['papers'].append(paper)
+        
+        # Convert to sorted list (newest first)
+        sorted_weeks = sorted(weeks.values(), key=lambda x: x['week_start'], reverse=True)
+        
+        return sorted_weeks
+
+    def render_paper_detail(self, arxiv_id: str) -> str:
+        """
+        Render individual paper detail page.
+        
+        :param arxiv_id: arXiv ID of the paper
+        :return: Rendered HTML of the paper detail page
+        """
+        # Find the paper by arxiv-id
+        paper = self.papers_collection.find_one({'arxiv-id': arxiv_id})
+        
+        if not paper:
+            return render_template('error.html', 
+                                 message='Paper not found.')
+        
+        return render_template('paper_detail.html',
+                             paper=paper,
+                             topics=self.TOPICS)
+
+    def group_papers_by_week(self, papers: List[Dict]) -> List[Dict]:
+        """
+        Group papers by week based on published date.
+        
+        :param papers: List of paper documents
+        :return: List of week groups with papers
+        """
+        weeks = {}
+        
+        for paper in papers:
+            try:
+                # Parse published date
+                if isinstance(paper.get('published'), str):
+                    pub_date = datetime.fromisoformat(paper['published'].replace('Z', '+00:00'))
+                else:
+                    pub_date = paper.get('published', datetime.utcnow())
+                
+                # Calculate week start (Monday)
+                days_since_monday = pub_date.weekday()
+                week_start = pub_date - timedelta(days=days_since_monday)
+                week_start = week_start.replace(hour=0, minute=0, second=0, microsecond=0)
+                
+                week_key = week_start.isoformat()
+                
+                if week_key not in weeks:
+                    weeks[week_key] = {
+                        'week_start': week_start,
+                        'week_end': week_start + timedelta(days=6),
+                        'papers': []
+                    }
+                
+                weeks[week_key]['papers'].append(paper)
+                
+            except Exception as e:
+                # If date parsing fails, put in current week
+                current_week_start = datetime.utcnow().replace(hour=0, minute=0, second=0, microsecond=0)
+                days_since_monday = current_week_start.weekday()
+                current_week_start = current_week_start - timedelta(days=days_since_monday)
+                
+                week_key = current_week_start.isoformat()
+                
+                if week_key not in weeks:
+                    weeks[week_key] = {
+                        'week_start': current_week_start,
+                        'week_end': current_week_start + timedelta(days=6),
+                        'papers': []
+                    }
+                
+                weeks[week_key]['papers'].append(paper)
+        
+        # Convert to sorted list (newest first)
+        sorted_weeks = sorted(weeks.values(), key=lambda x: x['week_start'], reverse=True)
+        
+        return sorted_weeks
 
     def render_preferences(self, token: str) -> str:
         """
