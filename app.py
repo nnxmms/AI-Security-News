@@ -612,7 +612,12 @@ class NewsletterApp:
         if not subscriber:
             return self.render_home(error='Email address not found. Please sign up first.')
         
-        if not subscriber.get('verified', False):
+        # Check if verified OR signed up before cutoff date
+        cutoff_date = datetime(2025, 5, 30, 0, 0, 0)
+        is_verified = subscriber.get('verified', False)
+        is_legacy_user = subscriber.get('subscription_date', datetime.utcnow()) < cutoff_date
+        
+        if not is_verified and not is_legacy_user:
             return self.render_home(error='Please verify your email address first using the link sent during signup.')
         
         # Generate preferences token if it doesn't exist
