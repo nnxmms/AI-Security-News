@@ -515,8 +515,12 @@ class NewsletterApp:
             return render_template('error.html', 
                                  message='Invalid or expired link.')
         
-        # Check if subscriber is verified
-        if not subscriber.get('verified', False):
+        # Check if verified OR signed up before cutoff date
+        cutoff_date = datetime(2025, 5, 30, 0, 0, 0)
+        is_verified = subscriber.get('verified', False)
+        is_legacy_user = subscriber.get('subscription_date', datetime.utcnow()) < cutoff_date
+        
+        if not is_verified and not is_legacy_user:
             return render_template('error.html', 
                                  message='Please verify your email address first.')
         
@@ -540,8 +544,12 @@ class NewsletterApp:
             return render_template('error.html', 
                                  message='Invalid or expired link.')
         
-        # Check if subscriber is verified
-        if not subscriber.get('verified', False):
+        # Check if verified OR signed up before cutoff date
+        cutoff_date = datetime(2025, 5, 30, 0, 0, 0)
+        is_verified = subscriber.get('verified', False)
+        is_legacy_user = subscriber.get('subscription_date', datetime.utcnow()) < cutoff_date
+        
+        if not is_verified and not is_legacy_user:
             return render_template('error.html', 
                                  message='Please verify your email address first.')
         
