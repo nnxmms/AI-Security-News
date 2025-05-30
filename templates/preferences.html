@@ -2,60 +2,152 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Manage Your Preferences - AI Security News</title>
     <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
             line-height: 1.6;
-            color: #333;
-            margin: 0;
-            padding: 0;
-            background-color: white;
+            color: #1a1a1a;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
             display: flex;
             flex-direction: column;
-            min-height: 100vh;
             align-items: center;
+            -webkit-text-size-adjust: 100%;
+            position: relative;
+            overflow-x: hidden;
+        }
+        
+        /* Animated background shapes */
+        body::before,
+        body::after {
+            content: '';
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: 0.4;
+            animation: float 20s infinite ease-in-out;
+        }
+        
+        body::before {
+            width: 400px;
+            height: 400px;
+            background: #667eea;
+            top: -200px;
+            right: -100px;
+        }
+        
+        body::after {
+            width: 300px;
+            height: 300px;
+            background: #764ba2;
+            bottom: -150px;
+            left: -100px;
+            animation-delay: -10s;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0) rotate(0deg); }
+            33% { transform: translate(30px, -30px) rotate(120deg); }
+            66% { transform: translate(-20px, 20px) rotate(240deg); }
+        }
+        
+        header {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            z-index: 10;
+        }
+        
+        .header-img {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            border: 3px solid rgba(255, 255, 255, 0.9);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .header-img:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
         }
         .container {
             width: 100%;
             max-width: 600px;
             margin: 0 auto;
-            padding: 40px 20px;
+            padding: 60px 20px 40px;
             text-align: center;
+            position: relative;
+            z-index: 1;
         }
+        
         h1 {
-            font-size: 36px;
-            margin-bottom: 20px;
-            color: #000;
-            font-weight: normal;
+            font-size: 48px;
+            font-weight: 700;
+            margin-bottom: 16px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: -1px;
+            animation: fadeInUp 0.8s ease-out;
         }
+        
         .subtitle {
             font-size: 18px;
-            color: #666;
+            color: #4a5568;
+            margin-bottom: 40px;
+            font-weight: 400;
+            line-height: 1.6;
+            animation: fadeInUp 0.8s ease-out 0.1s both;
+        }
+        
+        /* Glass morphism card */
+        .form-card {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            animation: fadeInUp 0.8s ease-out 0.2s both;
             margin-bottom: 30px;
         }
+        
         .email-display {
             font-size: 16px;
-            color: #333;
+            color: #4a5568;
             margin-bottom: 30px;
-            padding: 10px;
-            background-color: #f5f5f5;
-            border-radius: 8px;
+            padding: 16px 20px;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 12px;
+            border: 2px solid #e2e8f0;
+            font-weight: 500;
         }
+        
         .section-title {
-            font-size: 18px;
-            color: #666;
-            margin-bottom: 15px;
-            font-weight: normal;
+            font-size: 16px;
+            color: #4a5568;
+            margin-bottom: 16px;
+            font-weight: 500;
+            letter-spacing: 0.5px;
         }
         
         /* Topic Toggles */
         .topics-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 10px;
-            margin: 0 auto 25px;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin: 0 auto 28px;
+            width: 100%;
         }
         
         .topic-toggle {
@@ -68,37 +160,64 @@
         
         .topic-toggle label {
             display: block;
-            padding: 10px 15px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
+            padding: 12px 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
             background-color: white;
-            color: #666;
+            color: #4a5568;
             font-size: 14px;
+            font-weight: 500;
             cursor: pointer;
-            transition: all 0.2s;
+            transition: all 0.2s ease;
             text-align: center;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .topic-toggle label::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            opacity: 0;
+            transition: opacity 0.2s ease;
+            border-radius: 10px;
+            z-index: -1;
         }
         
         .topic-toggle input[type="checkbox"]:checked + label {
-            background-color: #333;
+            background-color: transparent;
             color: white;
-            border-color: #333;
+            border-color: transparent;
+        }
+        
+        .topic-toggle input[type="checkbox"]:checked + label::before {
+            opacity: 1;
         }
         
         .topic-toggle label:hover {
-            border-color: #999;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
         }
         
         /* Frequency Toggle */
         .frequency-toggle {
             display: flex;
             justify-content: center;
-            gap: 10px;
-            margin: 20px 0 30px;
+            gap: 12px;
+            margin: 20px 0 28px;
         }
         
         .frequency-option {
             position: relative;
+            flex: 1;
+            max-width: 200px;
         }
         
         .frequency-option input[type="radio"] {
@@ -107,92 +226,359 @@
         
         .frequency-option label {
             display: block;
-            padding: 10px 20px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
+            padding: 12px 24px;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
             background-color: white;
-            color: #666;
+            color: #4a5568;
             font-size: 14px;
+            font-weight: 500;
             cursor: pointer;
-            transition: all 0.2s;
+            transition: all 0.2s ease;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .frequency-option label::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            opacity: 0;
+            transition: opacity 0.2s ease;
+            z-index: -1;
         }
         
         .frequency-option input[type="radio"]:checked + label {
-            background-color: #333;
+            background-color: transparent;
             color: white;
-            border-color: #333;
+            border-color: transparent;
+        }
+        
+        .frequency-option input[type="radio"]:checked + label::before {
+            opacity: 1;
         }
         
         .frequency-option label:hover {
-            border-color: #999;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
         }
         
         /* Buttons */
         .btn {
-            padding: 12px 30px;
-            border: 1px solid #333;
-            border-radius: 10px;
-            background-color: #333;
-            color: white;
+            padding: 14px 32px;
+            border: none;
+            border-radius: 12px;
             font-size: 16px;
+            font-weight: 600;
             cursor: pointer;
-            transition: all 0.2s;
+            transition: all 0.2s ease;
+            position: relative;
+            overflow: hidden;
+            letter-spacing: 0.5px;
             margin: 10px;
         }
         
-        .btn:hover {
-            background-color: #555;
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            box-shadow: 0 4px 16px rgba(102, 126, 234, 0.3);
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn-primary:active {
+            transform: translateY(0);
         }
         
         .btn-secondary {
-            background-color: white;
-            color: #333;
+            background: white;
+            color: #4a5568;
+            border: 2px solid #e2e8f0;
         }
         
         .btn-secondary:hover {
-            background-color: #f5f5f5;
+            background: #f7fafc;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        
+        .btn-danger {
+            background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+            color: white;
+            box-shadow: 0 4px 16px rgba(220, 53, 69, 0.3);
+        }
+        
+        .btn-danger:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(220, 53, 69, 0.4);
         }
         
         /* Messages */
-        .error-message {
-            color: #ED556C;
-            margin: 20px 0;
-            font-style: italic;
-        }
+        .error-message,
         .success-message {
-            color: #006B3C;
-            margin: 20px 0;
-            font-style: italic;
+            padding: 12px 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            font-weight: 500;
+            animation: slideDown 0.3s ease-out;
         }
         
+        .error-message {
+            background: #fed7d7;
+            color: #c53030;
+            border: 1px solid #fc8181;
+        }
+        
+        .success-message {
+            background: #c6f6d5;
+            color: #276749;
+            border: 1px solid #9ae6b4;
+        }
+        
+        @keyframes slideDown {
+            from { 
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        /* Footer */
         footer {
             margin-top: auto;
             padding: 20px;
             text-align: center;
             font-size: 14px;
-            color: #666;
+            color: #4a5568;
+            position: relative;
+            z-index: 1;
         }
-        footer a {
-            color: #666;
+        
+        footer a.footer-link {
+            color: #667eea;
             text-decoration: none;
+            font-weight: 500;
+            transition: color 0.2s ease;
         }
-        footer a:hover {
-            text-decoration: underline;
+        
+        footer a.footer-link:hover {
+            color: #764ba2;
+        }
+        
+        /* Mobile Styles */
+        @media (max-width: 480px) {
+            body::before {
+                width: 300px;
+                height: 300px;
+            }
+            
+            body::after {
+                width: 200px;
+                height: 200px;
+            }
+            
+            .container {
+                padding: 40px 15px 30px;
+            }
+            
+            h1 {
+                font-size: 36px;
+            }
+            
+            .subtitle {
+                font-size: 16px;
+                margin-bottom: 30px;
+            }
+            
+            .form-card {
+                padding: 20px 15px;
+                border-radius: 16px;
+            }
+            
+            .topics-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 8px;
+                margin-bottom: 20px;
+            }
+            
+            .topic-toggle label {
+                padding: 12px 8px;
+                font-size: 12px;
+            }
+            
+            .frequency-toggle {
+                flex-direction: column;
+                width: 100%;
+            }
+            
+            .frequency-option {
+                width: 100%;
+                max-width: none;
+            }
+            
+            .btn {
+                width: 100%;
+            }
+            
+            .header-img {
+                width: 42px;
+                height: 42px;
+            }
         }
         
         @media (max-width: 768px) {
+            .container {
+                padding: 50px 20px 30px;
+            }
+            
             h1 {
-                font-size: 28px;
+                font-size: 40px;
+                margin-bottom: 12px;
             }
+            
+            .subtitle {
+                font-size: 16px;
+                margin-bottom: 32px;
+            }
+            
             .topics-grid {
-                grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+                grid-template-columns: repeat(2, 1fr);
+                gap: 10px;
+                margin-bottom: 24px;
             }
+            
+            .topic-toggle label {
+                padding: 14px 12px;
+                font-size: 13px;
+            }
+            
+            .section-title {
+                font-size: 15px;
+                margin-bottom: 14px;
+            }
+            
             .frequency-toggle {
-                flex-direction: column;
-                align-items: center;
+                gap: 10px;
+                margin: 16px 0 24px;
             }
+            
             .frequency-option label {
-                min-width: 200px;
-                text-align: center;
+                padding: 14px 20px;
+                font-size: 14px;
+            }
+            
+            .btn {
+                width: 100%;
+                padding: 16px 24px;
+                font-size: 16px;
+            }
+            
+            .header-img {
+                width: 42px;
+                height: 42px;
             }
         }
+    </style>
+</head>
+<body>
+<header>
+    <a href="https://www.linkedin.com/in/philipp-zimmermann-dtsec" target="_blank">
+        <img src="/newsletter/static/images/Philipp_Zimmermann.jpg" alt="Philipp Zimmermann" class="header-img">
+    </a>
+</header>
+<div class="container">
+    <h1>Manage Your Newsletter Preferences</h1>
+    
+    <div class="form-card">
+        <div class="email-display">
+            <strong>Email:</strong> {{ email }}
+        </div>
+        
+        {% if error %}
+            <div class="error-message">{{ error }}</div>
+        {% endif %}
+        
+        {% if success %}
+            <div class="success-message">{{ success }}</div>
+        {% endif %}
+        
+        {% if show_unsubscribe %}
+            <div class="subtitle">Are you sure you want to unsubscribe from the AI Security Newsletter?</div>
+            <form action="/newsletter/unsubscribe/{{ token }}" method="post" style="display: inline;">
+                <button type="submit" class="btn btn-danger">Yes, Unsubscribe</button>
+            </form>
+            <a href="/newsletter/preferences/{{ token }}" class="btn btn-secondary">No, Keep My Subscription</a>
+        {% else %}
+            <div class="subtitle">Update your newsletter preferences below</div>
+            
+            <form action="/newsletter/preferences/{{ token }}" method="post">
+                <!-- Topics Section -->
+                <div class="section-title">Select your topics of interest:</div>
+                <div class="topics-grid">
+                    {% for topic_id, topic_name in topics.items() %}
+                    <div class="topic-toggle">
+                        <input type="checkbox" id="{{ topic_id }}" name="topics" value="{{ topic_id }}" 
+                               {% if topic_id in current_topics %}checked{% endif %}>
+                        <label for="{{ topic_id }}">{{ topic_name }}</label>
+                    </div>
+                    {% endfor %}
+                </div>
+                
+                <!-- Frequency Section -->
+                <div class="section-title">How often would you like to receive updates?</div>
+                <div class="frequency-toggle">
+                    <div class="frequency-option">
+                        <input type="radio" id="immediate" name="frequency" value="immediate" 
+                               {% if current_frequency == 'immediate' %}checked{% endif %}>
+                        <label for="immediate">Immediate</label>
+                    </div>
+                    <div class="frequency-option">
+                        <input type="radio" id="weekly" name="frequency" value="weekly" 
+                               {% if current_frequency == 'weekly' %}checked{% endif %}>
+                        <label for="weekly">Weekly Summary</label>
+                    </div>
+                </div>
+                
+                <button type="submit" class="btn btn-primary">Update Preferences</button>
+            </form>
+            
+            <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee;">
+                <a href="/newsletter/unsubscribe/{{ token }}" class="btn btn-secondary">Unsubscribe</a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<footer>
+    <a href="https://hacking-and-security.de" class="footer-link">Hacking and Security</a>
+</footer>
+</body>
+</html>

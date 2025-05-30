@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 
 from flask import Flask, render_template, request, redirect, url_for, Blueprint, jsonify, Response
+from flask_mail import Mail, Message
 from pymongo import MongoClient
 from pymongo.errors import DuplicateKeyError
 from datetime import datetime, timedelta
@@ -21,6 +22,18 @@ class NewsletterApp:
         """
         # Flask app
         self.app: Flask = Flask(__name__)
+        
+        # Mail configuration from environment variables
+        self.app.config['MAIL_SERVER'] = os.environ.get('MAIL_SERVER', 'localhost')
+        self.app.config['MAIL_PORT'] = int(os.environ.get('MAIL_PORT', 587))
+        self.app.config['MAIL_USE_TLS'] = os.environ.get('MAIL_USE_TLS', 'true').lower() == 'true'
+        self.app.config['MAIL_USERNAME'] = os.environ.get('MAIL_USERNAME', '')
+        self.app.config['MAIL_PASSWORD'] = os.environ.get('MAIL_PASSWORD', '')
+        self.app.config['MAIL_DEFAULT_SENDER'] = os.environ.get('MAIL_DEFAULT_SENDER', 'no-reply@hacking-and-security.de')
+        
+        # Initialize Flask-Mail
+        self.mail = Mail(self.app)
+        
         # Create a Blueprint for the newsletter
         self.newsletter_bp = Blueprint('newsletter', __name__, url_prefix='/newsletter')
         # MongoDB setup
@@ -48,6 +61,8 @@ class NewsletterApp:
 
         # Create indexes for better performance
         self.collection.create_index('email', unique=True)
+        self.collection.create_index('verification_token')
+        self.collection.create_index('preferences_token')
         self.papers_collection.create_index('arxiv-id', unique=True)
         self.papers_collection.create_index('published')
         self.papers_collection.create_index([('title', 'text'), ('abstract', 'text'), ('authors', 'text')])
@@ -61,10 +76,10 @@ class NewsletterApp:
         def home():
             return self.render_home()
 
-        # Route for checking user preferences
-        @self.newsletter_bp.route('/check-preferences', methods=['POST'])
-        def check_preferences():
-            return self.check_user_preferences()
+        # Route for email verification
+        @self.newsletter_bp.route('/verify/<token>', methods=['GET'])
+        def verify_email(token):
+            return self.handle_email_verification(token)
 
         # Route for the signup/update form
         @self.newsletter_bp.route('/signup', methods=['POST'])
@@ -107,6 +122,16 @@ class NewsletterApp:
         @self.newsletter_bp.route('/preferences/<token>', methods=['POST'])
         def update_preferences(token):
             return self.handle_update_preferences(token)
+            
+        # Route for unsubscribe via token
+        @self.newsletter_bp.route('/unsubscribe/<token>', methods=['GET', 'POST'])
+        def unsubscribe(token):
+            return self.handle_unsubscribe(token)
+        
+        # Route for sending preferences link to existing users
+        @self.newsletter_bp.route('/send-preferences-link', methods=['POST'])
+        def send_preferences_link():
+            return self.handle_send_preferences_link()
 
     def render_home(self, success=None, error=None) -> str:
         """
@@ -156,28 +181,32 @@ class NewsletterApp:
             return f(*args, **kwargs)
         return decorated
 
-    def check_user_preferences(self) -> dict:
+    def handle_email_verification(self, token: str) -> str:
         """
-        Check if user exists and return their preferences.
+        Handle email verification via token.
         
-        :return: JSON response with user preferences or empty if not found
+        :param token: Verification token
+        :return: Rendered template or redirect
         """
-        data = request.get_json()
-        email = data.get('email', '').strip()
+        subscriber = self.collection.find_one({'verification_token': token})
         
-        if not self.is_valid_email(email):
-            return jsonify({'exists': False})
+        if not subscriber:
+            return render_template('error.html', 
+                                 message='Invalid or expired verification link.')
         
-        subscriber = self.collection.find_one({'email': email})
+        if subscriber.get('verified', False):
+            return self.render_preferences(subscriber['preferences_token'])
         
-        if subscriber:
-            return jsonify({
-                'exists': True,
-                'topics': subscriber.get('topics', []),
-                'frequency': subscriber.get('frequency', 'immediate')
-            })
-        else:
-            return jsonify({'exists': False})
+        # Mark as verified and remove verification token
+        self.collection.update_one(
+            {'_id': subscriber['_id']},
+            {
+                '$set': {'verified': True},
+                '$unset': {'verification_token': ''}
+            }
+        )
+        
+        return self.render_preferences(subscriber['preferences_token'])
 
     def handle_signup(self) -> str:
         """
@@ -198,13 +227,23 @@ class NewsletterApp:
         existing_subscriber = self.collection.find_one({'email': email})
         
         if existing_subscriber:
-            # Update existing subscriber
-            self.update_subscriber(email, topics, frequency)
-            return self.render_home(success='Preferences updated successfully!')
+            if not existing_subscriber.get('verified', False):
+                # Resend verification email
+                try:
+                    self.send_verification_email(email, topics, frequency, existing_subscriber.get('verification_token'))
+                    return self.render_home(success='Verification email sent! Please check your inbox.')
+                except Exception as e:
+                    return self.render_home(error='Failed to send verification email. Please try again.')
+            else:
+                return self.render_home(error='Email already registered. Use the link in your newsletter emails to manage preferences.')
         else:
-            # Create new subscriber
-            self.save_subscriber(email, topics, frequency)
-            return self.render_home(success='Sign up successful! Check your email for confirmation.')
+            # Create new unverified subscriber and send verification email
+            try:
+                verification_token = self.save_unverified_subscriber(email, topics, frequency)
+                self.send_verification_email(email, topics, frequency, verification_token)
+                return self.render_home(success='Verification email sent! Please check your inbox and click the verification link.')
+            except Exception as e:
+                return self.render_home(error='Failed to process signup. Please try again.')
 
     def handle_optout(self) -> str:
         """
@@ -212,21 +251,15 @@ class NewsletterApp:
 
         :return: Redirect to homepage after opt-out or render an error
         """
-        email = request.form.get('email', '').strip()
-
-        if not self.is_valid_email(email):
-            return self.render_home(error='Invalid email address.')
-
-        self.remove_email(email)
-        return self.render_home(success='You have been unsubscribed.')
+        return self.render_home(error='Direct unsubscribe is no longer available. Please use the unsubscribe link in your newsletter emails.')
 
     def handle_get_sign_ups(self) -> dict:
         """
-        Retrieve all signed-up users with their preferences.
+        Retrieve all verified signed-up users with their preferences.
 
-        :return: List of subscribers with preferences
+        :return: List of verified subscribers with preferences
         """
-        subscribers = self.collection.find({}, {'_id': 0})
+        subscribers = self.collection.find({'verified': True}, {'_id': 0})
         return {"subscribers": list(subscribers)}
 
     def handle_store_paper(self) -> dict:
@@ -471,6 +504,11 @@ class NewsletterApp:
             return render_template('error.html', 
                                  message='Invalid or expired link.')
         
+        # Check if subscriber is verified
+        if not subscriber.get('verified', False):
+            return render_template('error.html', 
+                                 message='Please verify your email address first.')
+        
         return render_template('preferences.html',
                              email=subscriber['email'],
                              topics=self.TOPICS,
@@ -490,6 +528,11 @@ class NewsletterApp:
         if not subscriber:
             return render_template('error.html', 
                                  message='Invalid or expired link.')
+        
+        # Check if subscriber is verified
+        if not subscriber.get('verified', False):
+            return render_template('error.html', 
+                                 message='Please verify your email address first.')
         
         topics = request.form.getlist('topics')
         frequency = request.form.get('frequency', 'immediate')
@@ -513,9 +556,165 @@ class NewsletterApp:
                              token=token,
                              success='Preferences updated successfully!')
 
+    def handle_unsubscribe(self, token: str) -> str:
+        """
+        Handle unsubscribe via token.
+        
+        :param token: Preferences token
+        :return: Rendered template or redirect
+        """
+        subscriber = self.collection.find_one({'preferences_token': token})
+        
+        if not subscriber:
+            return render_template('error.html', 
+                                 message='Invalid or expired unsubscribe link.')
+        
+        if request.method == 'POST':
+            # Actually unsubscribe
+            self.remove_email(subscriber['email'])
+            return render_template('error.html', 
+                                 message='You have been successfully unsubscribed from the AI Security Newsletter.')
+        
+        # Show confirmation page
+        return render_template('preferences.html',
+                             email=subscriber['email'],
+                             topics=self.TOPICS,
+                             current_topics=subscriber.get('topics', []),
+                             current_frequency=subscriber.get('frequency', 'immediate'),
+                             token=token,
+                             show_unsubscribe=True)
+
+    def handle_send_preferences_link(self) -> str:
+        """
+        Handle sending preferences link to existing users.
+        
+        :return: Rendered home page with success/error message
+        """
+        email = request.form.get('email', '').strip()
+        
+        if not self.is_valid_email(email):
+            return self.render_home(error='Invalid email address.')
+        
+        # Find the subscriber
+        subscriber = self.collection.find_one({'email': email})
+        
+        if not subscriber:
+            return self.render_home(error='Email address not found. Please sign up first.')
+        
+        if not subscriber.get('verified', False):
+            return self.render_home(error='Please verify your email address first using the link sent during signup.')
+        
+        # Generate preferences token if it doesn't exist
+        preferences_token = subscriber.get('preferences_token')
+        if not preferences_token:
+            preferences_token = secrets.token_urlsafe(32)
+            self.collection.update_one(
+                {'email': email},
+                {'$set': {'preferences_token': preferences_token}}
+            )
+        
+        try:
+            # Send preferences email
+            self.send_preferences_email(email, preferences_token)
+            return self.render_home(success='Preferences link sent! Please check your inbox.')
+        except Exception as e:
+            return self.render_home(error='Failed to send preferences link. Please try again.')
+
+    def save_unverified_subscriber(self, email: str, topics: list, frequency: str) -> str:
+        """
+        Save a new unverified subscriber with preferences.
+
+        :param email: Email address to save
+        :param topics: List of selected topics
+        :param frequency: Notification frequency preference
+        :return: Verification token
+        """
+        verification_token = secrets.token_urlsafe(32)
+        preferences_token = secrets.token_urlsafe(32)
+        
+        try:
+            self.collection.insert_one({
+                'email': email,
+                'topics': topics,
+                'frequency': frequency,
+                'verified': False,
+                'verification_token': verification_token,
+                'preferences_token': preferences_token,
+                'subscription_date': datetime.utcnow(),
+                'last_updated': datetime.utcnow()
+            })
+            return verification_token
+        except DuplicateKeyError:
+            # If email exists, update the verification token
+            self.collection.update_one(
+                {'email': email},
+                {
+                    '$set': {
+                        'topics': topics,
+                        'frequency': frequency,
+                        'verification_token': verification_token,
+                        'last_updated': datetime.utcnow()
+                    }
+                }
+            )
+            return verification_token
+
+    def send_verification_email(self, email: str, topics: list, frequency: str, verification_token: str) -> None:
+        """
+        Send verification email to the subscriber.
+        
+        :param email: Email address
+        :param topics: Selected topics
+        :param frequency: Notification frequency
+        :param verification_token: Verification token
+        """
+        # Create verification link
+        verification_link = url_for('newsletter.verify_email', token=verification_token, _external=True)
+        
+        # Convert topic IDs to names
+        topic_names = [self.TOPICS.get(topic, topic) for topic in topics]
+        
+        # Render email template
+        html_body = render_template('verification_email.html',
+                                   verification_link=verification_link,
+                                   topics=topic_names,
+                                   frequency=frequency.title())
+        
+        # Create and send email
+        msg = Message(
+            subject='Verify Your Email - AI Security News',
+            recipients=[email],
+            html=html_body
+        )
+        
+        self.mail.send(msg)
+
+    def send_preferences_email(self, email: str, preferences_token: str) -> None:
+        """
+        Send preferences link email to existing subscriber.
+        
+        :param email: Email address
+        :param preferences_token: Preferences token
+        """
+        # Create preferences link
+        preferences_link = url_for('newsletter.preferences', token=preferences_token, _external=True)
+        
+        # Render email template
+        html_body = render_template('preferences_email.html',
+                                   preferences_link=preferences_link)
+        
+        # Create and send email
+        msg = Message(
+            subject='Your Newsletter Preferences - AI Security News',
+            recipients=[email],
+            html=html_body
+        )
+        
+        self.mail.send(msg)
+
     def save_subscriber(self, email: str, topics: list, frequency: str) -> None:
         """
-        Save a new subscriber with preferences.
+        Save a new verified subscriber with preferences.
 
         :param email: Email address to save
         :param topics: List of selected topics
@@ -526,6 +725,7 @@ class NewsletterApp:
                 'email': email,
                 'topics': topics,
                 'frequency': frequency,
+                'verified': True,
                 'preferences_token': secrets.token_urlsafe(32),
                 'subscription_date': datetime.utcnow(),
                 'last_updated': datetime.utcnow()

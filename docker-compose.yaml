@@ -4,6 +4,11 @@ services:
     restart: always
     expose:
       - 5000
+    environment:
+      MAIL_SERVER: smtp.strato.de
+      MAIL_PORT: 587
+      MAIL_USERNAME: no-reply@hacking-and-security.de
+      MAIL_PASSWORD: bUpbem-dawme2-giszyf
     networks:
       - nginx
       - internal

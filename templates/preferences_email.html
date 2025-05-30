@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your Newsletter Preferences - AI Security News</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f7fa;
+        }
+        .container {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .logo {
+            font-size: 28px;
+            font-weight: bold;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 10px;
+        }
+        .preferences-button {
+            display: inline-block;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 30px;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 600;
+            margin: 20px 0;
+            text-align: center;
+        }
+        .preferences-button:hover {
+            opacity: 0.9;
+        }
+        .footer {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+            font-size: 14px;
+            color: #666;
+            text-align: center;
+        }
+        .features {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        .feature-list {
+            margin: 15px 0;
+            padding-left: 20px;
+        }
+        .feature-list li {
+            margin: 8px 0;
+            color: #4a5568;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">AI Security News</div>
+            <h1>Manage Your Preferences</h1>
+        </div>
+        
+        <p>Hello,</p>
+        
+        <p>You requested a link to manage your AI Security Newsletter preferences. Click the button below to access your personal preferences page:</p>
+        
+        <div style="text-align: center;">
+            <a href="{{ preferences_link }}" class="preferences-button">Manage My Preferences</a>
+        </div>
+        
+        <div class="features">
+            <strong>On your preferences page, you can:</strong>
+            <ul class="feature-list">
+                <li>Update your topic interests (Red Teaming, Safety, Risk & Governance)</li>
+                <li>Change your notification frequency (Immediate or Weekly Summary)</li>
+                <li>Unsubscribe if you no longer wish to receive updates</li>
+            </ul>
+        </div>
+        
+        <p>If you can't click the button, copy and paste this link into your browser:</p>
+        <p style="word-break: break-all; color: #667eea;">{{ preferences_link }}</p>
+        
+        <p>If you didn't request this email, you can safely ignore it. Your preferences will remain unchanged.</p>
+        
+        <div class="footer">
+            <p>This email was sent by AI Security News</p>
+            <p><a href="https://hacking-and-security.de" style="color: #667eea;">Hacking and Security</a></p>
+        </div>
+    </div>
+</body>
+</html>

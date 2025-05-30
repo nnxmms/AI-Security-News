@@ -11,6 +11,7 @@ RUN adduser -D user
 RUN pip install --upgrade pip
 RUN pip install flask
 RUN pip install pymongo
+RUN pip install flask_mail
 
 # Copy files
 ADD static /home/user/static

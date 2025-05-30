@@ -160,15 +160,11 @@
         /* Preferences Section */
         .preferences-section {
             margin: 0 0 20px 0;
-            opacity: 0;
-            max-height: 0;
-            overflow: hidden;
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
         
         .preferences-section.show {
             opacity: 1;
-            max-height: 500px;
+            max-height: none;
         }
         
         .section-title {
@@ -382,14 +378,6 @@
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
         }
         
-        #saveButton {
-            display: none;
-        }
-        
-        #saveButton.show {
-            display: inline-block;
-            animation: fadeIn 0.3s ease-out;
-        }
         
         @keyframes fadeIn {
             from { opacity: 0; }
@@ -538,10 +526,6 @@
                 width: 100%;
             }
             
-            #saveButton.show {
-                display: block;
-                width: 100%;
-            }
             
             .library-link {
                 width: 100%;
@@ -608,14 +592,7 @@
                 font-size: 16px;
             }
             
-            #saveButton.show {
-                display: block;
-                width: 100%;
-            }
             
-            .preferences-section.show {
-                max-height: 600px;
-            }
             
             .header-img {
                 width: 42px;
@@ -666,7 +643,7 @@
         {% endif %}
         
         <form id="signupForm" action="/newsletter/signup" method="post">
-            <div id="preferencesSection" class="preferences-section">
+            <div id="preferencesSection" class="preferences-section show">
                 <!-- Topics Section -->
                 <div class="section-title">Select your topics of interest:</div>
                 <div class="topics-grid">
@@ -696,13 +673,22 @@
             
             <div class="button-group">
                 <button type="submit" class="btn btn-primary" id="signupButton">Sign Up</button>
-                <button type="submit" class="btn btn-primary" id="saveButton">Save Changes</button>
-                <button type="button" class="btn btn-secondary" id="optoutButton">Opt Out</button>
             </div>
         </form>
         
-        <form id="optoutForm" action="/newsletter/optout" method="post" style="display: none;">
-            <input type="hidden" name="email" id="optout-email">
+    </div>
+
+    <!-- Existing User Preferences Section -->
+    <div class="form-card">
+        <div class="library-description">
+            Already subscribed? Get a link to manage your newsletter preferences.
+        </div>
+        <form id="preferencesForm" action="/newsletter/send-preferences-link" method="post">
+            <input type="email" id="preferencesEmail" name="email" class="email-input" placeholder="Your registered email address" required>
+            
+            <div class="button-group">
+                <button type="submit" class="btn btn-secondary">Send Preferences Link</button>
+            </div>
         </form>
     </div>
     
@@ -712,22 +698,6 @@
 </footer>
 
 <script>
-let originalPreferences = null;
-let emailInput = document.getElementById('email');
-let preferencesSection = document.getElementById('preferencesSection');
-let signupButton = document.getElementById('signupButton');
-let saveButton = document.getElementById('saveButton');
-let optoutButton = document.getElementById('optoutButton');
-let typingTimer;
-let doneTypingInterval = 500; // ms
-
-// Helper function to validate email format
-function isValidEmail(email) {
-    // Basic email regex pattern
-    const emailPattern = /^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$/;
-    return emailPattern.test(email);
-}
-
 // Helper function to clear status messages
 function clearStatusMessages() {
     const errorMsg = document.querySelector('.error-message');
@@ -736,129 +706,13 @@ function clearStatusMessages() {
     if (successMsg) successMsg.style.display = 'none';
 }
 
-// Show preferences section when email is entered
-emailInput.addEventListener('input', function() {
-    clearTimeout(typingTimer);
-    clearStatusMessages(); // Clear messages on email input
-    
-    if (isValidEmail(this.value)) {
-        preferencesSection.classList.add('show');
-        typingTimer = setTimeout(checkExistingPreferences, doneTypingInterval);
-    } else {
-        preferencesSection.classList.remove('show');
-        resetPreferences();
-    }
-});
+// Clear messages when user starts typing
+document.getElementById('email').addEventListener('input', clearStatusMessages);
+document.getElementById('preferencesEmail').addEventListener('input', clearStatusMessages);
 
-// Check if email exists and load preferences
-async function checkExistingPreferences() {
-    const email = emailInput.value;
-    
-    try {
-        const response = await fetch('/newsletter/check-preferences', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ email: email })
-        });
-        
-        const data = await response.json();
-        
-        if (data.exists) {
-            // Load existing preferences
-            loadPreferences(data);
-            originalPreferences = {
-                topics: [...data.topics],
-                frequency: data.frequency
-            };
-            signupButton.style.display = 'none';
-            checkForChanges();
-        } else {
-            // New user
-            resetPreferences();
-            originalPreferences = null;
-            signupButton.style.display = 'inline-block';
-            saveButton.classList.remove('show');
-        }
-    } catch (error) {
-        console.error('Error checking preferences:', error);
-    }
-}
-
-// Load preferences into the form
-function loadPreferences(data) {
-    // Clear all checkboxes first
-    document.querySelectorAll('input[name="topics"]').forEach(checkbox => {
-        checkbox.checked = false;
-    });
-    
-    // Set topics
-    data.topics.forEach(topic => {
-        const checkbox = document.getElementById(topic);
-        if (checkbox) {
-            checkbox.checked = true;
-        }
-    });
-    
-    // Set frequency
-    document.getElementById(data.frequency).checked = true;
-}
-
-// Reset preferences to default
-function resetPreferences() {
-    document.querySelectorAll('input[name="topics"]').forEach(checkbox => {
-        checkbox.checked = false;
-    });
-    document.getElementById('immediate').checked = true;
-}
-
-// Check if preferences have changed
-function checkForChanges() {
-    if (!originalPreferences) {
-        saveButton.classList.remove('show');
-        return;
-    }
-    
-    const currentTopics = Array.from(document.querySelectorAll('input[name="topics"]:checked'))
-        .map(cb => cb.value);
-    const currentFrequency = document.querySelector('input[name="frequency"]:checked').value;
-    
-    const topicsChanged = !arraysEqual(currentTopics, originalPreferences.topics);
-    const frequencyChanged = currentFrequency !== originalPreferences.frequency;
-    
-    if (topicsChanged || frequencyChanged) {
-        saveButton.classList.add('show');
-    } else {
-        saveButton.classList.remove('show');
-    }
-}
-
-// Helper function to compare arrays
-function arraysEqual(a, b) {
-    if (a.length !== b.length) return false;
-    const sortedA = [...a].sort();
-    const sortedB = [...b].sort();
-    return sortedA.every((val, index) => val === sortedB[index]);
-}
-
-// Add change listeners to all inputs
+// Add change listeners to all inputs to clear messages
 document.querySelectorAll('input[name="topics"], input[name="frequency"]').forEach(input => {
-    input.addEventListener('change', function() {
-        clearStatusMessages(); // Clear messages on preference changes
-        checkForChanges();
-    });
-});
-
-// Opt out functionality
-optoutButton.addEventListener('click', function() {
-    const email = emailInput.value;
-    if (email) {
-        document.getElementById('optout-email').value = email;
-        document.getElementById('optoutForm').submit();
-    } else {
-        alert('Please enter your email address to opt out.');
-    }
+    input.addEventListener('change', clearStatusMessages);
 });
 
 // Form validation
