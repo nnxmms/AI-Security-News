@@ -255,11 +255,22 @@ class NewsletterApp:
 
     def handle_get_sign_ups(self) -> dict:
         """
-        Retrieve all verified signed-up users with their preferences.
+        Retrieve all verified signed-up users and users signed up before 2025-05-30 with their preferences.
 
-        :return: List of verified subscribers with preferences
+        :return: List of subscribers with preferences
         """
-        subscribers = self.collection.find({'verified': True}, {'_id': 0})
+        # Hardcoded cutoff date: 2025-05-30 00:00:00 UTC
+        cutoff_date = datetime(2025, 5, 30, 0, 0, 0)
+        
+        # Query for verified users OR users signed up before 2025-05-30
+        query = {
+            '$or': [
+                {'verified': True},
+                {'subscription_date': {'$lt': cutoff_date}}
+            ]
+        }
+        
+        subscribers = self.collection.find(query, {'_id': 0})
         return {"subscribers": list(subscribers)}
 
     def handle_store_paper(self) -> dict:
