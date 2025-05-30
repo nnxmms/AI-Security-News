@@ -591,7 +591,7 @@ class NewsletterApp:
         if request.method == 'POST':
             # Actually unsubscribe
             self.remove_email(subscriber['email'])
-            return render_template('error.html', 
+            return render_template('success.html', 
                                  message='You have been successfully unsubscribed from the AI Security Newsletter.')
         
         # Show confirmation page
